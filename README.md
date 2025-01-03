@@ -1,7 +1,9 @@
 # Hotel Management System
 
 ## Introduction
-This project is a console-based Hotel Management System developed in C#. It allows users to perform various hotel management tasks such as making reservations, checking in, checking out, requesting services, and managing guests, rooms, payments, and services.
+This project is a console-based Hotel Management System developed in C#.
+Developed as a part of Object-Oriented software analysis and design CpE311 - Computer Engineering department - Computer and informatiom technology faculty - Jordan University of science and technology 
+It allows users to perform various hotel management tasks such as making reservations, checking in, checking out, requesting services, and managing guests, rooms, payments, and services.
 
 ## Features
 - **Guest Management**: Register new guests, log in existing guests, and manage guest information.
