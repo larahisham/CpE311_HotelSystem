@@ -48,7 +48,7 @@ public class IOFiles
 	{
 		FileStream ServiceData = new FileStream("ServiceFile.txt", FileMode.Create, FileAccess.Write);
 		List<Service> services = new List<Service>();
-		XmlSerializer serializer = new XmlSerializer(typeof(List<Service>));
+		XmlSerializer serializer = new XmlSerializer(typeof(List<Payment>));
 		serializer.Serialize(ServiceData, services);
 		ServiceData.Close();
 	}
@@ -77,10 +77,7 @@ public class Guest
 		this.ID = ID;
 		this.Password = Password;
 	}
-	public Guest()
-	{
-
-	}
+	public Guest(){}
 	public string ID
 	{
 		get;
@@ -199,7 +196,6 @@ public class Manager
 		Console.Write("Enter your choice : ");
 		int KindofUsage = Convert.ToInt32(Console.ReadLine());
 		Console.WriteLine("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-
 		HotelSystem HS0 = new HotelSystem();
 		switch (KindofUsage)
 		{
@@ -219,10 +215,8 @@ public class Manager
 				HS0.ViewAllRooms();
 				break;
 			case 6:
-				HS0.LoadRoomsFromFile();
 				Room RM0 = new Room();
-				// chose room to be updated
-				//RM0.UpdateRoomInfo();
+				RM0.UpdateRoomInfo();
 				break;
 			case 7:
 				Payment PY0 = new Payment();
@@ -294,21 +288,13 @@ public class Service : Guest
 			Console.WriteLine("Enter Available service");
 			return;
 		}
-
-		// Save service record
 		HotelSystem HSS = new HotelSystem();
 		HSS.SaveServiceToFile(this);
-
-		// Calculate the amount for the service
 		int totalAmount = Convert.ToInt32(CalculateServiceAmount());
-
-		// Create and save payment record
 		Payment payment = new Payment();
 		payment.CreateAndSavePaymentRecord(Description, totalAmount);
-
 		Console.WriteLine($"Your service request is confirmed. Your bill number is: {payment.BillNumber}. Your bill amount is: {payment.TotalAmount}");
 	}
-
 	public string CalculateServiceAmount()
 	{
 		int TotalServiceAmount;
@@ -328,14 +314,12 @@ public class Service : Guest
 			TotalServiceAmount = 5 * NumberOfKids;
 			return "Your service will cost : " + TotalServiceAmount;
 		}
-		return " ";
+		return " Select vaild option ";
 	}
-
 }
 [Serializable]
 public class Payment : Reservation 
 {
-	// banck balance from guest class 
 	public string BillNumber
 	{
 		get;
@@ -367,8 +351,6 @@ public class Payment : Reservation
 		this.PaymentSource = paymentSource;
 		this.TotalAmount = totalAmount;
 		this.PaymentStatus = "not paid";
-
-		// Save the payment record
 		HotelSystem hotelSystem = new HotelSystem();
 		hotelSystem.SavePaymentToFile(this);
 	}
@@ -377,99 +359,79 @@ public class Payment : Reservation
 		HotelSystem hotelSystem = new HotelSystem();
 		List<Payment> payments = hotelSystem.LoadPaymentsFromFile();
 		int paymentCounter = payments.Count;
-		int baseNumber = 0000; // Starting number for bill numbers
+		int baseNumber = 0000; 
 		paymentCounter++;
 		int uniqueBillNumber = baseNumber + paymentCounter;
 		return uniqueBillNumber;
 	}
-
-
 	public void PayForReservation(Guest guest)
 	{
 		HotelSystem hotelSystem = new HotelSystem();
 		List<Payment> payments = hotelSystem.LoadPaymentsFromFile();
 		var unpaidPayments = payments.Where(p => p.PaymentSource == "Reservation" && p.ID == guest.ID && p.PaymentStatus == "not paid").ToList();
-
 		if (unpaidPayments.Count == 0)
 		{
 			Console.WriteLine("No unpaid reservations found for the logged-in guest.");
 			return;
 		}
-
 		Console.WriteLine("Your unpaid reservations:");
-		foreach (var payment in unpaidPayments)
+		foreach (Payment payment in unpaidPayments)
 		{
 			Console.WriteLine($"Bill Number: {payment.BillNumber}, Amount: {payment.TotalAmount}");
 		}
-
 		Console.Write("Enter the bill number to pay for: ");
 		string billNumber = Console.ReadLine();
 		var selectedPayment = unpaidPayments.FirstOrDefault(p => p.BillNumber == billNumber);
-
 		if (selectedPayment == null)
 		{
 			Console.WriteLine("Invalid bill number.");
 			return;
 		}
-
 		if (!IsbalancePayable(selectedPayment.TotalAmount, guest))
 		{
 			Console.WriteLine("Insufficient bank balance.");
 			return;
 		}
-
 		guest.BankBalance -= selectedPayment.TotalAmount;
 		selectedPayment.PaymentStatus = "paid";
-
 		hotelSystem.UpdateGuestInFile(guest);
 		hotelSystem.UpdatePaymentInFile(selectedPayment);
-
 		Console.WriteLine("Payment successful. Your reservation payment status is now 'paid'.");
 	}
-
 	public void PayForService(Guest guest)
 	{
 		HotelSystem hotelSystem = new HotelSystem();
 		List<Payment> payments = hotelSystem.LoadPaymentsFromFile();
 		var unpaidPayments = payments.Where(p => p.PaymentSource == "Service" && p.ID == guest.ID && p.PaymentStatus == "not paid").ToList();
-
 		if (unpaidPayments.Count == 0)
 		{
 			Console.WriteLine("No unpaid services found for the logged-in guest.");
 			return;
 		}
-
 		Console.WriteLine("Your unpaid services:");
-		foreach (var payment in unpaidPayments)
+		foreach (Payment payment in unpaidPayments)
 		{
 			Console.WriteLine($"Bill Number: {payment.BillNumber}, Amount: {payment.TotalAmount}");
 		}
-
 		Console.Write("Enter the bill number to pay for: ");
 		string billNumber = Console.ReadLine();
 		var selectedPayment = unpaidPayments.FirstOrDefault(p => p.BillNumber == billNumber);
-
 		if (selectedPayment == null)
 		{
 			Console.WriteLine("Invalid bill number.");
 			return;
 		}
-
 		if (!IsbalancePayable(selectedPayment.TotalAmount, guest))
 		{
 			Console.WriteLine("Insufficient bank balance.");
 			return;
 		}
-
 		guest.BankBalance -= selectedPayment.TotalAmount;
 		selectedPayment.PaymentStatus = "paid";
-
 		hotelSystem.UpdateGuestInFile(guest);
 		hotelSystem.UpdatePaymentInFile(selectedPayment);
-
 		Console.WriteLine("Payment successful. Your service payment status is now 'paid'.");
 	}
-
 	public void GenerationOfProfitReport()
 	{
 		double totalRoomReservations = 0;
@@ -479,7 +441,7 @@ public class Payment : Reservation
 		List<Payment> payments = HSP.LoadPaymentsFromFile();
 		var paidPayments = payments.Where(p => p.PaymentStatus == "paid").ToList();
 
-		foreach (var payment in paidPayments)
+		foreach (Payment payment in paidPayments)
 		{
 			switch (payment.PaymentSource)
 			{
@@ -494,13 +456,11 @@ public class Payment : Reservation
 					break;
 			}
 		}
-
 		Console.WriteLine("Profit Report:");
 		Console.WriteLine($"Total from Room Reservations: {totalRoomReservations}");
 		Console.WriteLine($"Total from Car Rental: {totalCarRental}");
 		Console.WriteLine($"Total from Kids Zone: {totalKidsZone}");
 	}
-
 }
 [Serializable]
 public class Room : Guest
@@ -535,42 +495,28 @@ public class Room : Guest
 	public Room() { }
 	public void UpdateRoomInfo()
 	{
-		// Load all rooms from the file
 		HotelSystem hotelSystem = new HotelSystem();
 		List<Room> rooms = hotelSystem.LoadRoomsFromFile();
-
-		// Display all available rooms
 		Console.WriteLine("Available rooms:");
-		foreach (var room in rooms.Where(r => r.AvailabilityStatus))
+		foreach (Room room in rooms)
 		{
 			Console.WriteLine($"Room Number: {room.Number}, Type: {room.Type}, Price per Day: {room.PricePerDay}");
 		}
-
-		// Ask the manager to enter the room number to update
 		Console.Write("Enter the room number to update: ");
 		int roomNumber = Convert.ToInt32(Console.ReadLine());
-
-		// Find the selected room
 		Room selectedRoom = rooms.FirstOrDefault(r => r.Number == roomNumber);
 		if (selectedRoom == null)
 		{
 			Console.WriteLine("Invalid room number.");
 			return;
 		}
-
-		// Ask the manager to enter new values for 'type' and 'price' fields
 		Console.Write("Enter new type: ");
 		string newType = Console.ReadLine();
 		Console.Write("Enter new price per day: ");
 		double newPrice = Convert.ToDouble(Console.ReadLine());
-
-		// Update the room information
 		selectedRoom.Type = newType;
 		selectedRoom.PricePerDay = newPrice;
-
-		// Save the updated room information to the file
 		hotelSystem.SaveRoomToFile(selectedRoom);
-
 		Console.WriteLine("Room information updated successfully.");
 	}
 	public bool AvailableRoomsOnly()
@@ -586,7 +532,6 @@ public class Room : Guest
 				AvailableRooms.Add(i);
 			}
 		}
-		// seperate only available rooms 
 		int j = 1;
 		foreach (Room room in AvailableRooms)
 		{
@@ -594,8 +539,6 @@ public class Room : Guest
 			Console.WriteLine($" Room Number: {room.Number}, Room Type: {room.Type}");
 			j++;
 		}
-
-		// print available rooms only 
 		Console.Write("Enter your choice : ");
 		string y0 = Console.ReadLine();
 		int y1 = Convert.ToInt32(y0);
@@ -658,7 +601,6 @@ public class Reservation : Room
 		this.ReservationStatus = ReservationStatus;
 	}
 	public Reservation() { }
-
 	public int GenerateUnique4DigitIDNumber()
 	{
 		HotelSystem hotelSystem = new HotelSystem();
@@ -686,7 +628,6 @@ public class Reservation : Room
 			Console.WriteLine("Invalid date format. Please enter the date in the format yyyy-MM-dd.");
 			checkInInput = Console.ReadLine();
 		}
-
 		Console.Write("Please enter your Check-Out date (yyyy-MM-dd): ");
 		string checkOutInput = Console.ReadLine();
 		DateTime checkOutDate;
@@ -710,8 +651,6 @@ public class Reservation : Room
 			mealOptionIndex = Convert.ToInt32(Console.ReadLine());
 		}
 		string mealOption = MealOptions[mealOptionIndex - 1];
-
-		// Generate reservation ID and create reservation record
 		this.RID = GenerateUnique4DigitIDNumber();
 		this.CheckInDate = checkInDate;
 		this.CheckOutDate = checkOutDate;
@@ -720,24 +659,17 @@ public class Reservation : Room
 		this.ID = guest.ID;
 		HotelSystem hotelSystem = new HotelSystem();
 		hotelSystem.AddReservation(this);
-
-		// Calculate the amount for the reservation
 		double totalAmount = CalculateReservationAmount();
-
-		// Create and save payment record
 		Payment payment = new Payment();
 		payment.CreateAndSavePaymentRecord ("Reservation", totalAmount);
-
 		room.AvailabilityStatus = false;
 		hotelSystem.SaveRoomToFile(room);
 		Console.WriteLine($"Your reservation is confirmed. Reservation ID: {this.RID}. Your bill number is: {payment.BillNumber}. Your bill amount is: {payment.TotalAmount}");
 		return this;
 	}
-
 	public double CalculateReservationAmount()
 	{
 		TimeSpan residenceDays = this.CheckOutDate - this.CheckInDate;
-		//Days is a proparity in time span structure 
 		int days = residenceDays.Days;
 		Console.WriteLine($"Your reservation is for {days} days.");
 		double amount = days * this.PricePerDay;
@@ -760,98 +692,65 @@ public class Reservation : Room
 		double FinalAmount = amount * 0.6;
 		return FinalAmount;
 	}
-
 	public string CheckInReservation(string guestID)
 	{
-		// Load all reservations from the file
 		HotelSystem hotelSystem = new HotelSystem();
 		List<Reservation> reservations = hotelSystem.LoadReservationsFromFile();
-
-		// Filter reservations for the logged-in guest with status "confirmed"
 		List<Reservation> confirmedReservations = reservations
 			.Where(r => r.ID == guestID && r.ReservationStatus == "Confirmed")
 			.ToList();
-
 		if (confirmedReservations.Count == 0)
 		{
 			return "No confirmed reservations found for the logged-in guest.";
 		}
-
-		// Display all confirmed reservations for the logged-in guest
 		Console.WriteLine("Your confirmed reservations:");
 		for (int i = 0; i < confirmedReservations.Count; i++)
 		{
 			Console.WriteLine($"[{i + 1}] Reservation ID: {confirmedReservations[i].RID}, Check-in Date: {confirmedReservations[i].CheckInDate}, Check-out Date: {confirmedReservations[i].CheckOutDate}");
 		}
-
-		// Ask the guest to enter the reservation ID
 		Console.Write("Enter the reservation ID to check-in: ");
 		int reservationID = Convert.ToInt32(Console.ReadLine());
-
-		// Find the selected reservation
 		Reservation selectedReservation = confirmedReservations.FirstOrDefault(r => r.RID == reservationID);
 		if (selectedReservation == null)
 		{
 			return "Invalid reservation ID.";
 		}
-
-		// Change the status of the selected reservation to "checked-in"
 		selectedReservation.ReservationStatus = "Checked-in";
-
-		// Update the involved reservation in the database
 		hotelSystem.UpdateReservationInFile(selectedReservation);
-
 		return "Check-in successful. Your reservation status is now 'Checked-in'.";
 	}
 
 	public string CheckOutReservation(string guestID)
 	{
-		// Load all reservations from the file
 		HotelSystem hotelSystem = new HotelSystem();
 		List<Reservation> reservations = hotelSystem.LoadReservationsFromFile();
-
-		// Filter reservations for the logged-in guest with status "checked-in"
 		List<Reservation> checkedInReservations = reservations
 			.Where(r => r.ID == guestID && r.ReservationStatus == "Checked-in")
 			.ToList();
-
 		if (checkedInReservations.Count == 0)
 		{
 			return "No checked-in reservations found for the logged-in guest.";
 		}
-
-		// Display all checked-in reservations for the logged-in guest
 		Console.WriteLine("Your checked-in reservations:");
 		for (int i = 0; i < checkedInReservations.Count; i++)
 		{
 			Console.WriteLine($"[{i + 1}] Reservation ID: {checkedInReservations[i].RID}, Room Number: {checkedInReservations[i].Number}, Check-in Date: {checkedInReservations[i].CheckInDate}, Check-out Date: {checkedInReservations[i].CheckOutDate}");
 		}
-
-		// Ask the guest to enter the reservation ID
 		Console.Write("Enter the reservation ID to check-out: ");
 		int reservationID = Convert.ToInt32(Console.ReadLine());
-
-		// Find the selected reservation
 		Reservation selectedReservation = checkedInReservations.FirstOrDefault(r => r.RID == reservationID);
 		if (selectedReservation == null)
 		{
 			return "Invalid reservation ID.";
 		}
-
-		// Change the status of the selected reservation to "checked-out"
 		selectedReservation.ReservationStatus = "Checked-out";
-
-		// Set room availability to True
 		Room room = hotelSystem.LoadRoomsFromFile().FirstOrDefault(r => r.Number == selectedReservation.Number);
 		if (room != null)
 		{
 			room.AvailabilityStatus = true;
 			hotelSystem.SaveRoomToFile(room);
 		}
-
-		// Update the involved reservation in the database
 		hotelSystem.UpdateReservationInFile(selectedReservation);
-
 		return "Check-out successful. Your reservation status is now 'Checked-out'.";
 	}
 }
@@ -988,6 +887,8 @@ public class HotelSystem
 			password = Console.ReadLine();
 		}
 		Console.WriteLine("Log-in is successfully done!");
+		Manager manager = new Manager();
+		manager.ManagerFunctions();
 		return true;
 	}
 	public void LogoutM()
@@ -1086,7 +987,6 @@ public class HotelSystem
 				"\nGoodbye!");
 		}
 	}
-
 	public void UpdateGuestInFile(Guest updatedGuest)
 	{
 		List<Guest> guests = LoadGuestsFromFile();
@@ -1100,7 +1000,6 @@ public class HotelSystem
 			GuestsDataSave.Close();
 		}
 	}
-
 	public void UpdatePaymentInFile(Payment updatedPayment)
 	{
 		List<Payment> payments = LoadPaymentsFromFile();
@@ -1114,7 +1013,6 @@ public class HotelSystem
 			PaymentsDataSave.Close();
 		}
 	}
-
 	public void SaveGuestToFile(Guest guest)
 	{
 		List<Guest> guests = LoadGuestsFromFile();
@@ -1142,7 +1040,7 @@ public class HotelSystem
 	}
 	public List<Room> LoadRoomsFromFile()
 	{
-		List<Room> Rooms = new List<Room>();
+		Rooms = new List<Room>();
 		if (!File.Exists("RoomsFile.txt"))
 		{
 			throw new FileNotFoundException("The file 'RoomsFile.txt' does not exist.");
@@ -1197,21 +1095,44 @@ public class HotelSystem
 	}
 	public List<Reservation> LoadReservationsFromFile()
 	{
-		// Code to load reservation data from file
-		return new List<Reservation>();
+		Reservations = new List<Reservation>();
+		if (!File.Exists("ReservationsFile.txt"))
+		{
+			throw new FileNotFoundException("The file 'ReservationsFile.txt' does not exist.");
+		}
+		FileStream ReservationsDataLoad = new FileStream("ReservationsFile.txt", FileMode.Open, FileAccess.Read);
+		XmlSerializer serializer = new XmlSerializer(typeof(List<Reservation>));
+		if (ReservationsDataLoad.Length > 0)
+		{
+			Reservations = (List<Reservation>)serializer.Deserialize(ReservationsDataLoad);
+		}
+		ReservationsDataLoad.Close();
+		return Reservations;
 	}
 	public void SaveServiceToFile(Service service)
 	{
 		List<Service> services = LoadServicesFromFile();
 		services.Add(service);
 		FileStream ServicesDataSave = new FileStream("ServicesFile.txt", FileMode.Append, FileAccess.Write);
-		XmlSerializer serializer = new XmlSerializer(typeof(List<Service>));
+		XmlSerializer serializer = new XmlSerializer(typeof(List<Payment>));
 		serializer.Serialize(ServicesDataSave, services);
 		ServicesDataSave.Close();
 	}
 	public List<Service> LoadServicesFromFile()
 	{
-		return new List<Service>();
+		Services = new List<Service>();
+		if (!File.Exists("ServicesFile.txt"))
+		{
+			throw new FileNotFoundException("The file 'ServicesFile.txt' does not exist.");
+		}
+		FileStream ServicesDataLoad = new FileStream("ServicesFile.txt", FileMode.Open, FileAccess.Read);
+		XmlSerializer serializer = new XmlSerializer(typeof(List<Payment>));
+		if (ServicesDataLoad.Length > 0)
+		{
+			Services = (List<Service>) serializer.Deserialize(ServicesDataLoad);
+		}
+		ServicesDataLoad.Close();
+		return Services;
 	}
 	public void SavePaymentToFile(Payment payment)
 	{
@@ -1224,7 +1145,19 @@ public class HotelSystem
 	}
 	public List<Payment> LoadPaymentsFromFile()
 	{
-		return new List<Payment>();
+		Payments = new List<Payment>();
+		if (!File.Exists("PaymentsFile.txt"))
+		{
+			throw new FileNotFoundException("The file 'PaymentsFile.txt' does not exist.");
+		}
+		FileStream PaymentsDataLoad = new FileStream("PaymentsFile.txt", FileMode.Open, FileAccess.Read);
+		XmlSerializer serializer = new XmlSerializer(typeof(List<Payment>));
+		if (PaymentsDataLoad.Length > 0)
+		{
+			Payments = (List<Payment>)serializer.Deserialize(PaymentsDataLoad);
+		}
+		PaymentsDataLoad.Close();
+		return Payments;
 	}
 	public void Exit()
 	{
