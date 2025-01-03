@@ -471,7 +471,36 @@ public class Payment : Reservation
 		Console.WriteLine("Payment successful. Your service payment status is now 'paid'.");
 	}
 
-	public void GenerationOfProfitReport() { }
+	public void GenerationOfProfitReport()
+	{
+		double totalRoomReservations = 0;
+		double totalCarRental = 0;
+		double totalKidsZone = 0;
+		HotelSystem HSP = new HotelSystem();
+		List<Payment> payments = HSP.LoadPaymentsFromFile();
+		var paidPayments = payments.Where(p => p.PaymentStatus == "paid").ToList();
+
+		foreach (var payment in paidPayments)
+		{
+			switch (payment.PaymentSource)
+			{
+				case "Reservation":
+					totalRoomReservations += payment.TotalAmount;
+					break;
+				case "Car-Rental":
+					totalCarRental += payment.TotalAmount;
+					break;
+				case "Kids-Zone":
+					totalKidsZone += payment.TotalAmount;
+					break;
+			}
+		}
+
+		Console.WriteLine("Profit Report:");
+		Console.WriteLine($"Total from Room Reservations: {totalRoomReservations}");
+		Console.WriteLine($"Total from Car Rental: {totalCarRental}");
+		Console.WriteLine($"Total from Kids Zone: {totalKidsZone}");
+	}
 
 }
 [Serializable]
@@ -505,9 +534,45 @@ public class Room : Guest
 		this.AvailabilityStatus = AvailabilityStatus;
 	}
 	public Room() { }
-	public void UpdateRoomInfo(int Number, string Type, double PricePerDay, bool AvailabilityStatus)
+	public void UpdateRoomInfo()
 	{
+		// Load all rooms from the file
+		HotelSystem hotelSystem = new HotelSystem();
+		List<Room> rooms = hotelSystem.LoadRoomsFromFile();
 
+		// Display all available rooms
+		Console.WriteLine("Available rooms:");
+		foreach (var room in rooms.Where(r => r.AvailabilityStatus))
+		{
+			Console.WriteLine($"Room Number: {room.Number}, Type: {room.Type}, Price per Day: {room.PricePerDay}");
+		}
+
+		// Ask the manager to enter the room number to update
+		Console.Write("Enter the room number to update: ");
+		int roomNumber = Convert.ToInt32(Console.ReadLine());
+
+		// Find the selected room
+		Room selectedRoom = rooms.FirstOrDefault(r => r.Number == roomNumber);
+		if (selectedRoom == null)
+		{
+			Console.WriteLine("Invalid room number.");
+			return;
+		}
+
+		// Ask the manager to enter new values for 'type' and 'price' fields
+		Console.Write("Enter new type: ");
+		string newType = Console.ReadLine();
+		Console.Write("Enter new price per day: ");
+		double newPrice = Convert.ToDouble(Console.ReadLine());
+
+		// Update the room information
+		selectedRoom.Type = newType;
+		selectedRoom.PricePerDay = newPrice;
+
+		// Save the updated room information to the file
+		hotelSystem.SaveRoomToFile(selectedRoom);
+
+		Console.WriteLine("Room information updated successfully.");
 	}
 	public bool AvailableRoomsOnly()
 	{
