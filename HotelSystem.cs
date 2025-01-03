@@ -139,13 +139,16 @@ public class Guest
 					HS0.AddReservation(R0);
 					break;
 				case 2:
-					RS0.CheckInReservation(guest.ID);
+					string id0 = guest.ID;
+					Console.WriteLine(RS0.CheckInReservation(id0));
+
 					break;
 				case 3:
 					RV0.RequestAService();
 					break;
 				case 4:
-					RS0.CheckOutReservation(guest.ID);
+					string id1 = guest.ID;
+					Console.WriteLine(RS0.CheckOutReservation(id1));
 					break;
 				case 5:
 					Payment PY0 = new Payment();
@@ -165,6 +168,7 @@ public class Guest
 			}
 		}
 	}
+
 	public override bool Equals(object obj)
 	{
 		if (obj is Guest guest)
@@ -268,7 +272,6 @@ public class Service : Guest
 
 		}
 	}
-
 	public void RequestAService()
 	{
 		Console.WriteLine("What Service do you want to get?");
@@ -315,7 +318,6 @@ public class Service : Guest
 			Console.WriteLine("Error: Unable to parse the total amount.");
 		}
 	}
-
 	public string CalculateServiceAmount()
 	{
 		int TotalServiceAmount;
@@ -707,10 +709,13 @@ public class Reservation : Room
 		double FinalAmount = amount * 0.6;
 		return FinalAmount;
 	}
+
+
 	public string CheckInReservation(string guestID)
 	{
 		HotelSystem hotelSystem = new HotelSystem();
 		List<Reservation> reservations = hotelSystem.LoadReservationsFromFile();
+
 		List<Reservation> confirmedReservations = reservations
 			.Where(r => r.ID == guestID && r.ReservationStatus == "Confirmed")
 			.ToList();
@@ -734,6 +739,8 @@ public class Reservation : Room
 		hotelSystem.UpdateReservationInFile(selectedReservation);
 		return "Check-in successful. Your reservation status is now 'Checked-in'.";
 	}
+
+
 
 	public string CheckOutReservation(string guestID)
 	{
@@ -1179,4 +1186,3 @@ public class HotelSystem
 		Console.ReadKey();
 	}
 }
-
