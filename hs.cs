@@ -480,60 +480,72 @@ public class Reservation : Room
 		int uniqueIDNumber = baseNumber + reservationCounter;
 		return uniqueIDNumber; 
 	}
-	public Reservation StartNewReservation()
+
+
+
+
+	public Reservation StartNewReservation(Guest guest)
 	{
 		Console.WriteLine("Choose the appropriate room for your stay : ");
 		Room room = new Room();
-		room.AvailableRoomsOnly();
+		if (!room.AvailableRoomsOnly())
+		{
+			Console.WriteLine("No available rooms.");
+			return null;
+		}
+		Console.Write("Please enter your Check-In date (yyyy-MM-dd): ");
+		string checkInInput = Console.ReadLine();
+		DateTime checkInDate;
+		while (!DateTime.TryParseExact(checkInInput, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out checkInDate))
+		{
+			Console.WriteLine("Invalid date format. Please enter the date in the format yyyy-MM-dd.");
+			checkInInput = Console.ReadLine();
+		}
 
-
+		Console.Write("Please enter your Check-Out date (yyyy-MM-dd): ");
+		string checkOutInput = Console.ReadLine();
+		DateTime checkOutDate;
+		while (!DateTime.TryParseExact(checkOutInput, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out checkOutDate) || checkOutDate <= checkInDate)
+		{
+			Console.WriteLine("Invalid date format or Check-Out date must be later than Check-In date. Please enter a valid date.");
+			checkOutInput = Console.ReadLine();
+		}
 		Console.WriteLine("Select the meal option that suits you best : ");
 		int i = 1;
 		foreach (string option in MealOptions)
 		{
-			Console.WriteLine("[" + i + "]" + " " + option);
+			Console.WriteLine("[" + i + "] " + option);
 			i++;
 		}
 		Console.Write("Enter your choice : ");
-		int op = Convert.ToInt32(Console.ReadLine());
-		if (op >= 1 && op <= 3)
+		int mealOptionIndex = Convert.ToInt32(Console.ReadLine());
+		while (mealOptionIndex < 1 || mealOptionIndex > MealOptions.Length)
 		{
-			MealOption = MealOptions[op - 1];
+			Console.WriteLine("Invalid choice. Enter Available meal option.");
+			mealOptionIndex = Convert.ToInt32(Console.ReadLine());
 		}
-		else
-		{
-			Console.WriteLine("Enter Available meal option");
-			return null;
-		}
+		string mealOption = MealOptions[mealOptionIndex - 1];
+
+		// Generate reservation ID and create reservation record
 		this.RID = GenerateUnique4DigitIDNumber();
-		Console.WriteLine("Your Reservation ID is :" + RID); Console.WriteLine("\n"); 
-		Console.Write("Please enter your Check-In date (yyyy-MM-dd): ");
-		string checkInInput = Console.ReadLine();
-		if (DateTime.TryParseExact(checkInInput, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out DateTime checkInDate))
-		{
-			this.CheckInDate = checkInDate;
-		}
-		else
-		{
-			Console.WriteLine("Invalid date format. Please enter the date in the format yyyy-MM-dd.");
-		}
+		this.CheckInDate = checkInDate;
+		this.CheckOutDate = checkOutDate;
+		this.MealOption = mealOption;
 		this.ReservationStatus = "Confirmed";
-		return this; 
-		
+		this.ID = guest.ID;
+		HotelSystem hotelSystem = new HotelSystem();
+		hotelSystem.AddReservation(this);
+
+		Payment payment = new Payment
+		{
+		};
+
+		hotelSystem.AddPayment(payment);
+		room.AvailabilityStatus = false;
+		hotelSystem.SaveRoomToFile(room);
+		Console.WriteLine("Your reservation is confirmed. Reservation ID: " + this.RID);
+		return this;
 	}
-
-	/*
-	 string checkInInput = Console.ReadLine();
-if (DateTime.TryParseExact(checkInInput, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out DateTime checkInDate))
-{
-    this.CheckInDate = checkInDate;
-}
-else
-{
-    Console.WriteLine("Invalid date format. Please enter the date in the format yyyy-MM-dd.");
-}
-
-	 */
 
 	public double CalculateReservationAmount()
 	{
@@ -562,27 +574,6 @@ else
 		return FinalAmount;
 	}
 
-/*
-	public string CheckInReservation(DateTime checkInInput)
-	{
-		if (DateTime.TryParseExact(checkInInput, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out DateTime CheckInDate))
-		{
-			double reservationCost = CalculateReservationAmount();
-			string[] discountDates = { "2025-02-01", "2025-04-22", "2025-10-10" };
-
-			if (discountDates.Contains(checkInInput.ToString("yyyy-MM-dd")))
-			{
-				reservationCost = ApplyDiscount(reservationCost);
-			}
-
-			return "Your Check-in date is: " + checkInInput.ToString("yyyy-MM-dd") + ". Your total reservation cost is: " + reservationCost;
-		}
-		else
-		{
-			return "Invalid date format. Please enter the date in the format yyyy-MM-dd.";
-		}
-	}
-*/
 	 public string CheckInReservation(DateTime checkInInput, string id)
      {
 		List<Reservation> list;
@@ -1033,44 +1024,44 @@ public class HotelSystem
 }
 namespace Program
 {
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            HotelSystem hotelSystem = new HotelSystem();
-            bool exit = false;
+	class Program
+	{
+		static void Main(string[] args)
+		{
+			HotelSystem hotelSystem = new HotelSystem();
+			bool exit = false;
 
-            while (!exit)
-            {
-                Console.WriteLine("Welcome to our hotel self-service system...");
-                Console.WriteLine("Please select a number to complete \n\n" +
-                                  "[1] Log-in as Guest\n" +
-                                  "[2] Log-in as Manager\n" +
-                                  "[3] Sign-in as new Guest\n" +
-                                  "[4] Exit");
-                Console.Write("Enter your choice : ");
-                int KindofUser = Convert.ToInt32(Console.ReadLine());
+			while (!exit)
+			{
+				Console.WriteLine("Welcome to our hotel self-service system...");
+				Console.WriteLine("Please select a number to complete \n\n" +
+								  "[1] Log-in as Guest\n" +
+								  "[2] Log-in as Manager\n" +
+								  "[3] Sign-in as new Guest\n" +
+								  "[4] Exit");
+				Console.Write("Enter your choice : ");
+				int KindofUser = Convert.ToInt32(Console.ReadLine());
 
-                switch (KindofUser)
-                {
-                    case 1:
-                        hotelSystem.LoginG();
-                        break;
-                    case 2:
-                        hotelSystem.LoginM();
-                        break;
-                    case 3:
-                        hotelSystem.NewUser();
-                        break;
-                    case 4:
-                        exit = true;
-                        hotelSystem.Exit();
-                        break;
-                    default:
-                        Console.WriteLine("Invalid choice, please try again.");
-                        break;
-                }
-            }
-        }
-    }
+				switch (KindofUser)
+				{
+					case 1:
+						hotelSystem.LoginG();
+						break;
+					case 2:
+						hotelSystem.LoginM();
+						break;
+					case 3:
+						hotelSystem.NewUser();
+						break;
+					case 4:
+						exit = true;
+						hotelSystem.Exit();
+						break;
+					default:
+						Console.WriteLine("Invalid choice, please try again.");
+						break;
+				}
+			}
+		}
+	}
 }
