@@ -1,4 +1,39 @@
-# **Hotel Management System** 
+# Hotel Management System
 
+## Introduction
+This project is a console-based Hotel Management System developed in C#. It allows users to perform various hotel management tasks such as making reservations, checking in, checking out, requesting services, and managing guests, rooms, payments, and services.
+
+## Features
+- **Guest Management**: Register new guests, log in existing guests, and manage guest information.
+- **Room Management**: View and update room information, check room availability, and manage room reservations.
+- **Reservation Management**: Make, check-in, and check-out reservations.
+- **Service Management**: Request and manage hotel services.
+- **Payment Management**: Create and manage payment records for reservations and services.
+- **Manager Functions**: View all guests, rooms, reservations, services, and payments. Generate profit reports.
+
+## File Structure
+- `HotelSystem.cs`: Main file containing all the classes and methods for managing the hotel system.
+
+## Classes
+- **IOFiles**: Handles file operations for saving and loading data.
+- **Guest**: Represents a hotel guest with properties like ID, Name, Password, PhoneNumber, and BankBalance.
+- **Manager**: Represents a hotel manager with functions to manage the hotel system.
+- **Service**: Represents a service provided by the hotel.
+- **Payment**: Represents a payment record for reservations or services.
+- **Room**: Represents a hotel room with properties like Number, Type, PricePerDay, and AvailabilityStatus.
+- **Reservation**: Represents a room reservation with details like CheckInDate, CheckOutDate, MealOption, and ReservationStatus.
+- **HotelSystem**: Main class that manages the overall hotel system, including guests, rooms, reservations, services, and payments.
+
+## Usage
+To use the system, run the `Program` class, which will present a menu with the following options:
+1. Log-in as Guest
+2. Log-in as Manager
+3. Sign-in as new Guest
+4. Exit (From the system)
+
+## How to Run
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/larahisham/CpE311_HotelSystem.git
 
 
