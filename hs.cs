@@ -148,10 +148,11 @@ public class Guest
 				break;
 			case 5:
 				Payment PY0 = new Payment();
-
+				PY0.PayForReservation(guest);
 				break;
 			case 6:
-
+				Payment PY1 = new Payment();
+				PY1.PayForService(guest);
 				break;
 			case 7:
 				HS0.LogoutG();
@@ -304,7 +305,7 @@ public class Service : Guest
 
 		// Create and save payment record
 		Payment payment = new Payment();
-		payment.CreatePaymentRecord(Description, totalAmount);
+		payment.CreateAndSavePaymentRecord(Description, totalAmount);
 
 		Console.WriteLine($"Your service request is confirmed. Your bill number is: {payment.BillNumber}. Your bill amount is: {payment.TotalAmount}");
 	}
@@ -340,10 +341,7 @@ public class Payment : Reservation
 	{
 		get;
 		set;
-	} // bill number 
-	  //**********************************************************************
-	private string ReservationID { get; set; } // could be deleted and get fron reservation class when needed 
-											   // as well as bank balance											   //**********************************************************************
+	} 
 	public double TotalAmount
 	{
 		get;
@@ -385,12 +383,95 @@ public class Payment : Reservation
 		int uniqueBillNumber = baseNumber + paymentCounter;
 		return uniqueBillNumber;
 	}
-	/*
-	public void CalculateTotalBillAmount() { }
-	public void UpdatePaymentStatus(string newStatus) { }
+
+
+	public void PayForReservation(Guest guest)
+	{
+		HotelSystem hotelSystem = new HotelSystem();
+		List<Payment> payments = hotelSystem.LoadPaymentsFromFile();
+		var unpaidPayments = payments.Where(p => p.PaymentSource == "Reservation" && p.ID == guest.ID && p.PaymentStatus == "not paid").ToList();
+
+		if (unpaidPayments.Count == 0)
+		{
+			Console.WriteLine("No unpaid reservations found for the logged-in guest.");
+			return;
+		}
+
+		Console.WriteLine("Your unpaid reservations:");
+		foreach (var payment in unpaidPayments)
+		{
+			Console.WriteLine($"Bill Number: {payment.BillNumber}, Amount: {payment.TotalAmount}");
+		}
+
+		Console.Write("Enter the bill number to pay for: ");
+		string billNumber = Console.ReadLine();
+		var selectedPayment = unpaidPayments.FirstOrDefault(p => p.BillNumber == billNumber);
+
+		if (selectedPayment == null)
+		{
+			Console.WriteLine("Invalid bill number.");
+			return;
+		}
+
+		if (!IsbalancePayable(selectedPayment.TotalAmount, guest))
+		{
+			Console.WriteLine("Insufficient bank balance.");
+			return;
+		}
+
+		guest.BankBalance -= selectedPayment.TotalAmount;
+		selectedPayment.PaymentStatus = "paid";
+
+		hotelSystem.UpdateGuestInFile(guest);
+		hotelSystem.UpdatePaymentInFile(selectedPayment);
+
+		Console.WriteLine("Payment successful. Your reservation payment status is now 'paid'.");
+	}
+
+	public void PayForService(Guest guest)
+	{
+		HotelSystem hotelSystem = new HotelSystem();
+		List<Payment> payments = hotelSystem.LoadPaymentsFromFile();
+		var unpaidPayments = payments.Where(p => p.PaymentSource == "Service" && p.ID == guest.ID && p.PaymentStatus == "not paid").ToList();
+
+		if (unpaidPayments.Count == 0)
+		{
+			Console.WriteLine("No unpaid services found for the logged-in guest.");
+			return;
+		}
+
+		Console.WriteLine("Your unpaid services:");
+		foreach (var payment in unpaidPayments)
+		{
+			Console.WriteLine($"Bill Number: {payment.BillNumber}, Amount: {payment.TotalAmount}");
+		}
+
+		Console.Write("Enter the bill number to pay for: ");
+		string billNumber = Console.ReadLine();
+		var selectedPayment = unpaidPayments.FirstOrDefault(p => p.BillNumber == billNumber);
+
+		if (selectedPayment == null)
+		{
+			Console.WriteLine("Invalid bill number.");
+			return;
+		}
+
+		if (!IsbalancePayable(selectedPayment.TotalAmount, guest))
+		{
+			Console.WriteLine("Insufficient bank balance.");
+			return;
+		}
+
+		guest.BankBalance -= selectedPayment.TotalAmount;
+		selectedPayment.PaymentStatus = "paid";
+
+		hotelSystem.UpdateGuestInFile(guest);
+		hotelSystem.UpdatePaymentInFile(selectedPayment);
+
+		Console.WriteLine("Payment successful. Your service payment status is now 'paid'.");
+	}
+
 	public void GenerationOfProfitReport() { }
-	public void PayForReservation() { }
-	public void PayForService() { }*/
 
 }
 [Serializable]
@@ -524,10 +605,6 @@ public class Reservation : Room
 		int uniqueIDNumber = baseNumber + reservationCounter;
 		return uniqueIDNumber; 
 	}
-
-
-
-
 	public Reservation StartNewReservation(Guest guest)
 	{
 		Console.WriteLine("Choose the appropriate room for your stay : ");
@@ -945,6 +1022,35 @@ public class HotelSystem
 				"\nGoodbye!");
 		}
 	}
+
+	public void UpdateGuestInFile(Guest updatedGuest)
+	{
+		List<Guest> guests = LoadGuestsFromFile();
+		int i = guests.FindIndex(g => g.ID == updatedGuest.ID);
+		if (i != -1)
+		{
+			guests[i] = updatedGuest;
+			FileStream GuestsDataSave = new FileStream("GuestsFile.txt", FileMode.Create, FileAccess.Write);
+			XmlSerializer serializer = new XmlSerializer(typeof(List<Guest>));
+			serializer.Serialize(GuestsDataSave, guests);
+			GuestsDataSave.Close();
+		}
+	}
+
+	public void UpdatePaymentInFile(Payment updatedPayment)
+	{
+		List<Payment> payments = LoadPaymentsFromFile();
+		int i = payments.FindIndex(p => p.BillNumber == updatedPayment.BillNumber);
+		if (i != -1)
+		{
+			payments[i] = updatedPayment;
+			FileStream PaymentsDataSave = new FileStream("PaymentsFile.txt", FileMode.Create, FileAccess.Write);
+			XmlSerializer serializer = new XmlSerializer(typeof(List<Payment>));
+			serializer.Serialize(PaymentsDataSave, payments);
+			PaymentsDataSave.Close();
+		}
+	}
+
 	public void SaveGuestToFile(Guest guest)
 	{
 		List<Guest> guests = LoadGuestsFromFile();
