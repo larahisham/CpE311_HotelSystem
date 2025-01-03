@@ -138,7 +138,7 @@ public class Guest
 				HS0.AddReservation(R0);
 				break;
 			case 2:
-				RS0.CheckInReservation(RS0.CheckInDate);
+				RS0.CheckInReservation();
 				break;
 			case 3:
 				RV0.RequestAService();
@@ -574,118 +574,98 @@ public class Reservation : Room
 		return FinalAmount;
 	}
 
-	 public string CheckInReservation(DateTime checkInInput, string id)
-     {
-		List<Reservation> list;
-		HotelSystem HS0 = new HotelSystem();
-		list = HS0.LoadReservationsFromFile();
-		List<Reservation> AvailableReservation = new List<Reservation>();
-		foreach (Reservation i in list)
-		{
-			if (i.ReservationStatus == "Confirmed" && i.ID == id)
-			{
-				AvailableReservation.Add(i);
-			}
-		}
-		int j = 1;
-		foreach (Reservation reservation in AvailableReservation)
-		{
-			Console.Write("[" + j + "]");
-			Console.WriteLine($" : {reservation.}, : {}");
-			j++;
-		}
-
-		string checkInDateStr = checkInInput.ToString("yyyy-MM-dd");
-    double reservationCost = CalculateReservationAmount();
-    string[] discountDates = { "2025-02-01", "2025-04-22", "2025-10-10" };
-    
-    if (discountDates.Contains(checkInDateStr))
-    {
-        reservationCost = ApplyDiscount(reservationCost);
-    }
-    return "Your Check-in date is: " + checkInDateStr + ". Your total reservation cost is: " + reservationCost;
-   }
-
-
-	/*public string CheckInReservation(DateTime checkInInput)
+	public string CheckInReservation(string guestID)
 	{
-		if (DateTime.TryParseExact(checkInInput, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out DateTime CheckInDate))
+		// Load all reservations from the file
+		HotelSystem hotelSystem = new HotelSystem();
+		List<Reservation> reservations = hotelSystem.LoadReservationsFromFile();
+
+		// Filter reservations for the logged-in guest with status "confirmed"
+		List<Reservation> confirmedReservations = reservations
+			.Where(r => r.ID == guestID && r.ReservationStatus == "Confirmed")
+			.ToList();
+
+		if (confirmedReservations.Count == 0)
 		{
-			if (checkInInput == "2025-02-01")
-			{
-				double i = CalculateReservationAmount();
-				double j = ApplyDiscount(i);
-				return "Your Check-in date is :" + checkInInput + "Your total reservation cost is :" + j;
-			}
-			else if (checkInInput == "2025-04-22")
-			{
-				double i = CalculateReservationAmount();
-				double j = ApplyDiscount(i);
-				return "Your Check-in date is :" + checkInInput + "Your total reservation cost is :" + j;
-			}
-			else if (checkInInput == "2025-10-10")
-			{
-				double i = CalculateReservationAmount();
-				double j = ApplyDiscount(i);
-				return "Your Check-in date is :" + checkInInput + "Your total reservation cost is :" + j;
-			}
-			else
-			{
-				double i = CalculateReservationAmount();
-				return "Your Check-in date is :" + checkInInput + "Your total reservation cost is :" + i;
-			}
+			return "No confirmed reservations found for the logged-in guest.";
 		}
-		else
+
+		// Display all confirmed reservations for the logged-in guest
+		Console.WriteLine("Your confirmed reservations:");
+		for (int i = 0; i < confirmedReservations.Count; i++)
 		{
-			return ("Invalid date format. Please enter the date in the format yyyy-MM-dd.");
+			Console.WriteLine($"[{i + 1}] Reservation ID: {confirmedReservations[i].RID}, Check-in Date: {confirmedReservations[i].CheckInDate}, Check-out Date: {confirmedReservations[i].CheckOutDate}");
 		}
+
+		// Ask the guest to enter the reservation ID
+		Console.Write("Enter the reservation ID to check-in: ");
+		int reservationID = Convert.ToInt32(Console.ReadLine());
+
+		// Find the selected reservation
+		Reservation selectedReservation = confirmedReservations.FirstOrDefault(r => r.RID == reservationID);
+		if (selectedReservation == null)
+		{
+			return "Invalid reservation ID.";
+		}
+
+		// Change the status of the selected reservation to "checked-in"
+		selectedReservation.ReservationStatus = "Checked-in";
+
+		// Update the involved reservation in the database
+		hotelSystem.UpdateReservationInFile(selectedReservation);
+
+		return "Check-in successful. Your reservation status is now 'Checked-in'.";
 	}
-	*/
 
-
-
-
-	public string CheckOutReservation()
+	public string CheckOutReservation(string guestID)
 	{
-		List<Reservation> list;
-		HotelSystem HS0 = new HotelSystem();
-		list = HS0.LoadReservationsFromFile();
-		List<Reservation> AvailableReservation = new List<Reservation>();
-		foreach (Reservation i in list)
+		// Load all reservations from the file
+		HotelSystem hotelSystem = new HotelSystem();
+		List<Reservation> reservations = hotelSystem.LoadReservationsFromFile();
+
+		// Filter reservations for the logged-in guest with status "checked-in"
+		List<Reservation> checkedInReservations = reservations
+			.Where(r => r.ID == guestID && r.ReservationStatus == "Checked-in")
+			.ToList();
+
+		if (checkedInReservations.Count == 0)
 		{
-			if (i.ReservationStatus == "Confirmed")
-			{
-				AvailableReservation.Add(i);
-			}
-		}
-		int j = 1;
-		foreach (Room room in AvailableReservation)
-		{
-			Console.Write("[" + j + "]");
-			Console.WriteLine($" Room Number: {room.Number}, Room Type: {room.Type}");
-			j++;
+			return "No checked-in reservations found for the logged-in guest.";
 		}
 
+		// Display all checked-in reservations for the logged-in guest
+		Console.WriteLine("Your checked-in reservations:");
+		for (int i = 0; i < checkedInReservations.Count; i++)
+		{
+			Console.WriteLine($"[{i + 1}] Reservation ID: {checkedInReservations[i].RID}, Room Number: {checkedInReservations[i].Number}, Check-in Date: {checkedInReservations[i].CheckInDate}, Check-out Date: {checkedInReservations[i].CheckOutDate}");
+		}
 
+		// Ask the guest to enter the reservation ID
+		Console.Write("Enter the reservation ID to check-out: ");
+		int reservationID = Convert.ToInt32(Console.ReadLine());
 
-		this.ReservationStatus = "Checked-out";
-		Console.Write("Please enter your Check-Out date (yyyy-MM-dd): ");
-			string checkOutInput = Console.ReadLine();
-			if (DateTime.TryParseExact(checkOutInput, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out DateTime CheckOutDate))
-			{
-				if (CheckOutDate > CheckInDate)
-				{
-				return "Your Check-Out date is :" + checkOutInput;
-			}
-				else
-				{
-					return "Check-Out date must be later than Check-In date. Please enter a valid date.";
-				}
-			}
-			else
-			{
-				return "Invalid date format. Please enter the date in the format yyyy-MM-dd.";
-			}
+		// Find the selected reservation
+		Reservation selectedReservation = checkedInReservations.FirstOrDefault(r => r.RID == reservationID);
+		if (selectedReservation == null)
+		{
+			return "Invalid reservation ID.";
+		}
+
+		// Change the status of the selected reservation to "checked-out"
+		selectedReservation.ReservationStatus = "Checked-out";
+
+		// Set room availability to True
+		Room room = hotelSystem.LoadRoomsFromFile().FirstOrDefault(r => r.Number == selectedReservation.Number);
+		if (room != null)
+		{
+			room.AvailabilityStatus = true;
+			hotelSystem.SaveRoomToFile(room);
+		}
+
+		// Update the involved reservation in the database
+		hotelSystem.UpdateReservationInFile(selectedReservation);
+
+		return "Check-out successful. Your reservation status is now 'Checked-out'.";
 	}
 }
 [Serializable]
@@ -776,6 +756,27 @@ public class HotelSystem
 			v++;
 		}
 	}
+
+	public void UpdateReservationInFile(Reservation updatedReservation)
+	{
+		List<Reservation> reservations = LoadReservationsFromFile();
+
+		// Find the index of the reservation to be updated
+		int index = reservations.FindIndex(r => r.RID == updatedReservation.RID);
+		if (index != -1)
+		{
+			reservations[index] = updatedReservation;
+
+			// Save the updated reservations list back to the file
+			FileStream ReservationsDataSave = new FileStream("ReservationsFile.txt", FileMode.Create, FileAccess.Write);
+			XmlSerializer serializer = new XmlSerializer(typeof(List<Reservation>));
+			serializer.Serialize(ReservationsDataSave, reservations);
+			ReservationsDataSave.Close();
+		}
+	}
+
+
+
 	public void ViewAllRooms()
 	{
 		int v = 1;
