@@ -31,11 +31,10 @@ To use the system, run the `Program` class, which will present a menu with the f
 3. Sign-in as new Guest
 4. Exit (From the system)
 
+   ## Contact 
+For any questions or inquiries, please contact larahishamahmadby@gmail.com or lhbaniyasin22@cit.just.edu.jo
+
 ## How to Run
  Clone the repository:
    ```sh
    git clone https://github.com/larahisham/CpE311_HotelSystem.git
-
-## Contact 
-For any questions or inquiries, please contact larahishamahmadby@gmail.com or lhbaniyasin22@cit.just.edu.jo
-
