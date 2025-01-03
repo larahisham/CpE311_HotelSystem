@@ -1,3 +1,4 @@
+
 using System.Xml.Serialization;
 using System;
 using System.IO;
@@ -48,7 +49,7 @@ public class IOFiles
 	{
 		FileStream ServiceData = new FileStream("ServiceFile.txt", FileMode.Create, FileAccess.Write);
 		List<Service> services = new List<Service>();
-		XmlSerializer serializer = new XmlSerializer(typeof(List<Payment>));
+		XmlSerializer serializer = new XmlSerializer(typeof(List<Service>));
 		serializer.Serialize(ServiceData, services);
 		ServiceData.Close();
 	}
@@ -77,7 +78,7 @@ public class Guest
 		this.ID = ID;
 		this.Password = Password;
 	}
-	public Guest(){}
+	public Guest() { }
 	public string ID
 	{
 		get;
@@ -112,54 +113,59 @@ public class Guest
 	}
 	public void GuestFunctions(Guest guest)
 	{
-		Console.WriteLine("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-		Console.WriteLine("You're here to? Pleas Select a number...\n\n\n" +
-			"[1] Reserve a room\n" +
-			"[2] Check-In\n" +
-			"[3] Request a service\n" +
-			"[4] Check-Out\n" +
-			"[5] Pay for a reservation\n" +
-			"[6] Pay for a service\n" +
-			"[7] Log-Out");
-		Console.Write("Enter your choice : ");
-		int KindofUsage = Convert.ToInt32(Console.ReadLine());
-		Console.WriteLine("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-
-		HotelSystem HS0 = new HotelSystem();
-		Reservation RS0 = new Reservation();
-		Service RV0 = new Service();
-		switch (KindofUsage)
+		bool exitGuestMenu = false;
+		while (!exitGuestMenu)
 		{
-			case 1:
-				Reservation R0 = RS0.StartNewReservation(guest);
-				HS0.AddReservation(R0);
-				break;
-			case 2:
-				RS0.CheckInReservation(guest.ID);
-				break;
-			case 3:
-				RV0.RequestAService();
-				break;
-			case 4:
-				RS0.CheckOutReservation(guest.ID);
-				break;
-			case 5:
-				Payment PY0 = new Payment();
-				PY0.PayForReservation(guest);
-				break;
-			case 6:
-				Payment PY1 = new Payment();
-				PY1.PayForService(guest);
-				break;
-			case 7:
-				HS0.LogoutG();
-				break;
-			default:
-				Console.WriteLine("Try Again");
-				break;
+			Console.WriteLine("\n");
+			Console.WriteLine("You're here to? Pleas Select a number...\n\n\n" +
+				"[1] Reserve a room\n" +
+				"[2] Check-In\n" +
+				"[3] Request a service\n" +
+				"[4] Check-Out\n" +
+				"[5] Pay for a reservation\n" +
+				"[6] Pay for a service\n" +
+				"[7] Log-Out");
+			Console.Write("Enter your choice : ");
+			int KindofUsage = Convert.ToInt32(Console.ReadLine());
+			Console.WriteLine("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+
+			HotelSystem HS0 = new HotelSystem();
+			Reservation RS0 = new Reservation();
+			Service RV0 = new Service();
+			switch (KindofUsage)
+			{
+				case 1:
+					Reservation R0 = RS0.StartNewReservation(guest);
+					HS0.AddReservation(R0);
+					break;
+				case 2:
+					RS0.CheckInReservation(guest.ID);
+					break;
+				case 3:
+					RV0.RequestAService();
+					break;
+				case 4:
+					RS0.CheckOutReservation(guest.ID);
+					break;
+				case 5:
+					Payment PY0 = new Payment();
+					PY0.PayForReservation(guest);
+					break;
+				case 6:
+					Payment PY1 = new Payment();
+					PY1.PayForService(guest);
+					break;
+				case 7:
+					HS0.LogoutG();
+					exitGuestMenu = true;
+					break;
+				default:
+					Console.WriteLine("Try Again");
+					break;
+			}
 		}
 	}
-	public override bool Equals(object obj) 
+	public override bool Equals(object obj)
 	{
 		if (obj is Guest guest)
 		{
@@ -183,51 +189,56 @@ public class Manager
 	}
 	public void ManagerFunctions()
 	{
-		Console.WriteLine("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-		Console.WriteLine("You're here to? Pleas Select a number...\n\n\n" +
-			"[1] View all guests \n" +
-			"[2] View all reservations \n" +
-			"[3] View all services\n" +
-			"[4] View all payments \n" +
-			"[5] View all rooms\n" +
-			"[6] Update room information\n" +
-			"[7] Generate profit report\n" +
-			"[8] Log-Out");
-		Console.Write("Enter your choice : ");
-		int KindofUsage = Convert.ToInt32(Console.ReadLine());
-		Console.WriteLine("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-		HotelSystem HS0 = new HotelSystem();
-		switch (KindofUsage)
+		bool exitManagerMenu = false;
+		while (!exitManagerMenu)
 		{
-			case 1:
-				HS0.ViewAllGuests();
-				break;
-			case 2:
-				HS0.ViewAllReservations();
-				break;
-			case 3:
-				HS0.ViewAllServices();
-				break;
-			case 4:
-				HS0.ViewAllPayments();
-				break;
-			case 5:
-				HS0.ViewAllRooms();
-				break;
-			case 6:
-				Room RM0 = new Room();
-				RM0.UpdateRoomInfo();
-				break;
-			case 7:
-				Payment PY0 = new Payment();
-				PY0.GenerationOfProfitReport();
-				break;
-			case 8:
-				HS0.LogoutM();
-				break;
-			default:
-				Console.WriteLine("Try Again");
-				break;
+			Console.WriteLine("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+			Console.WriteLine("You're here to? Pleas Select a number...\n\n\n" +
+				"[1] View all guests \n" +
+				"[2] View all reservations \n" +
+				"[3] View all services\n" +
+				"[4] View all payments \n" +
+				"[5] View all rooms\n" +
+				"[6] Update room information\n" +
+				"[7] Generate profit report\n" +
+				"[8] Log-Out");
+			Console.Write("Enter your choice : ");
+			int KindofUsage = Convert.ToInt32(Console.ReadLine());
+			Console.WriteLine("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+			HotelSystem HS0 = new HotelSystem();
+			switch (KindofUsage)
+			{
+				case 1:
+					HS0.ViewAllGuests();
+					break;
+				case 2:
+					HS0.ViewAllReservations();
+					break;
+				case 3:
+					HS0.ViewAllServices();
+					break;
+				case 4:
+					HS0.ViewAllPayments();
+					break;
+				case 5:
+					HS0.ViewAllRooms();
+					break;
+				case 6:
+					Room RM0 = new Room();
+					RM0.UpdateRoomInfo();
+					break;
+				case 7:
+					Payment PY0 = new Payment();
+					PY0.GenerationOfProfitReport();
+					break;
+				case 8:
+					HS0.LogoutM();
+					exitManagerMenu = true;
+					break;
+				default:
+					Console.WriteLine("Try Again");
+					break;
+			}
 		}
 	}
 }
@@ -290,41 +301,45 @@ public class Service : Guest
 		}
 		HotelSystem HSS = new HotelSystem();
 		HSS.SaveServiceToFile(this);
-		int totalAmount = Convert.ToInt32(CalculateServiceAmount());
-		Payment payment = new Payment();
-		payment.CreateAndSavePaymentRecord(Description, totalAmount);
-		Console.WriteLine($"Your service request is confirmed. Your bill number is: {payment.BillNumber}. Your bill amount is: {payment.TotalAmount}");
+		string totalAmount = CalculateServiceAmount();
+		string amountString = totalAmount.Split(':')[1].Trim();
+		int amount;
+		if (int.TryParse(amountString, out amount))
+		{
+			Payment payment = new Payment();
+			payment.CreateAndSavePaymentRecord(Description, amount);
+			Console.WriteLine($"Your service request is confirmed. Your bill number is: {payment.BillNumber}. Your bill amount is: {payment.TotalAmount}");
+		}
+		else
+		{
+			Console.WriteLine("Error: Unable to parse the total amount.");
+		}
 	}
+
 	public string CalculateServiceAmount()
 	{
 		int TotalServiceAmount;
 		if (Description == description[0])
 		{
-			Console.Write("You choose the Car-Rental service, How many days you want to rent a car? ");
-			int RentalDays = Convert.ToInt32(Console.ReadLine());
-			this.Notes = RentalDays;
-			TotalServiceAmount = 10 * RentalDays;
+			TotalServiceAmount = 10 * this.Notes;
 			return "Your service will cost : " + TotalServiceAmount;
 		}
 		else if (Description == description[1])
 		{
-			Console.Write("You choose the Kids-Zone service, How many kids do you have? ");
-			int NumberOfKids = Convert.ToInt32(Console.ReadLine());
-			this.Notes = NumberOfKids;
-			TotalServiceAmount = 5 * NumberOfKids;
+			TotalServiceAmount = 5 * this.Notes;
 			return "Your service will cost : " + TotalServiceAmount;
 		}
-		return " Select vaild option ";
+		return "Select valid option";
 	}
 }
 [Serializable]
-public class Payment : Reservation 
+public class Payment : Reservation
 {
 	public string BillNumber
 	{
 		get;
 		set;
-	} 
+	}
 	public double TotalAmount
 	{
 		get;
@@ -359,7 +374,7 @@ public class Payment : Reservation
 		HotelSystem hotelSystem = new HotelSystem();
 		List<Payment> payments = hotelSystem.LoadPaymentsFromFile();
 		int paymentCounter = payments.Count;
-		int baseNumber = 0000; 
+		int baseNumber = 0000;
 		paymentCounter++;
 		int uniqueBillNumber = baseNumber + paymentCounter;
 		return uniqueBillNumber;
@@ -563,7 +578,7 @@ public class Room : Guest
 	}
 }
 [Serializable]
-public class Reservation : Room 
+public class Reservation : Room
 {
 	private static readonly string[] MealOptions = { "Break-fast", "Break-fast and Lunch", "Full-Board" };
 	public int RID
@@ -592,7 +607,7 @@ public class Reservation : Room
 		set;
 	}
 	public Reservation(int RID, DateTime CheckInDate, DateTime CheckOutDate, string MealOption, string ReservationStatus, int Number, string Type, double PricePerDay, bool AvailabilityStatus) :
-		base( Number, Type, PricePerDay, AvailabilityStatus)
+		base(Number, Type, PricePerDay, AvailabilityStatus)
 	{
 		this.RID = RID;
 		this.CheckInDate = CheckInDate;
@@ -606,10 +621,10 @@ public class Reservation : Room
 		HotelSystem hotelSystem = new HotelSystem();
 		List<Reservation> reservations = hotelSystem.LoadReservationsFromFile();
 		int reservationCounter = reservations.Count;
-		int baseNumber = 0000; 
+		int baseNumber = 0000;
 		reservationCounter++;
 		int uniqueIDNumber = baseNumber + reservationCounter;
-		return uniqueIDNumber; 
+		return uniqueIDNumber;
 	}
 	public Reservation StartNewReservation(Guest guest)
 	{
@@ -661,7 +676,7 @@ public class Reservation : Room
 		hotelSystem.AddReservation(this);
 		double totalAmount = CalculateReservationAmount();
 		Payment payment = new Payment();
-		payment.CreateAndSavePaymentRecord ("Reservation", totalAmount);
+		payment.CreateAndSavePaymentRecord("Reservation", totalAmount);
 		room.AvailabilityStatus = false;
 		hotelSystem.SaveRoomToFile(room);
 		Console.WriteLine($"Your reservation is confirmed. Reservation ID: {this.RID}. Your bill number is: {payment.BillNumber}. Your bill amount is: {payment.TotalAmount}");
@@ -801,8 +816,8 @@ public class HotelSystem
 			Console.Write("[" + v + "]");
 			Console.WriteLine(
 				$" Service ID : {service.SID}," +
-				$" Service Description : {service.Description},"+
-				$" Service Notes : {service.Notes},"+
+				$" Service Description : {service.Description}," +
+				$" Service Notes : {service.Notes}," +
 				$" Guest's national ID (who order this service) : {service.ID}"
 				);
 			v++;
@@ -816,10 +831,10 @@ public class HotelSystem
 			Console.Write("[" + v + "]");
 			Console.WriteLine(
 				$" Room Number : {payment.BillNumber}," +
-				$" Room Type : {payment.PaymentSource},"+
+				$" Room Type : {payment.PaymentSource}," +
 				$" Room Type : {payment.PaymentStatus}," +
 				$" Room Type : {payment.TotalAmount}," +
-			    $" Guest's national ID (who order this service or reserve a room) : {payment.ID}" 
+				$" Guest's national ID (who order this service or reserve a room) : {payment.ID}"
 				);
 			v++;
 		}
@@ -832,12 +847,12 @@ public class HotelSystem
 			Console.Write("[" + v + "]");
 			Console.WriteLine(
 				$" Reservation ID : {reservation.RID}," +
-				$" Check-in Date : {reservation.CheckInDate},"+
-				$" Check-out Date : {reservation.CheckOutDate},"+
-				$" Reservation Status : {reservation.ReservationStatus},"+
-				$" Meals Option : {reservation.MealOption},"+
-			    $" Guest's national ID (who reserve this room) : {reservation.ID},"+
-			    $" Room Number : {reservation.Number}"
+				$" Check-in Date : {reservation.CheckInDate}," +
+				$" Check-out Date : {reservation.CheckOutDate}," +
+				$" Reservation Status : {reservation.ReservationStatus}," +
+				$" Meals Option : {reservation.MealOption}," +
+				$" Guest's national ID (who reserve this room) : {reservation.ID}," +
+				$" Room Number : {reservation.Number}"
 				);
 			v++;
 		}
@@ -849,7 +864,7 @@ public class HotelSystem
 		if (i != -1)
 		{
 			reservations[i] = updatedReservation;
-			FileStream ReservationsDataSave = new FileStream("ReservationsFile.txt", FileMode.Create, FileAccess.Write);
+			FileStream ReservationsDataSave = new FileStream("ReservationFile.txt", FileMode.Create, FileAccess.Write);
 			XmlSerializer serializer = new XmlSerializer(typeof(List<Reservation>));
 			serializer.Serialize(ReservationsDataSave, reservations);
 			ReservationsDataSave.Close();
@@ -1007,7 +1022,7 @@ public class HotelSystem
 		if (i != -1)
 		{
 			payments[i] = updatedPayment;
-			FileStream PaymentsDataSave = new FileStream("PaymentsFile.txt", FileMode.Create, FileAccess.Write);
+			FileStream PaymentsDataSave = new FileStream("PaymentFile.txt", FileMode.Create, FileAccess.Write);
 			XmlSerializer serializer = new XmlSerializer(typeof(List<Payment>));
 			serializer.Serialize(PaymentsDataSave, payments);
 			PaymentsDataSave.Close();
@@ -1063,12 +1078,11 @@ public class HotelSystem
 	{
 		List<Reservation> reservations = LoadReservationsFromFile();
 		reservations.Add(reservation);
-		FileStream ReservationsDataSave = new FileStream("ReservationsFile.txt", FileMode.Append, FileAccess.Write);
+		FileStream ReservationsDataSave = new FileStream("ReservationFile.txt", FileMode.Append, FileAccess.Write);
 		XmlSerializer serializer = new XmlSerializer(typeof(List<Reservation>));
 		serializer.Serialize(ReservationsDataSave, reservations);
 		ReservationsDataSave.Close();
 	}
-
 	public void AddRoom(Room room)
 	{
 		Rooms.Add(room);
@@ -1096,11 +1110,11 @@ public class HotelSystem
 	public List<Reservation> LoadReservationsFromFile()
 	{
 		Reservations = new List<Reservation>();
-		if (!File.Exists("ReservationsFile.txt"))
+		if (!File.Exists("ReservationFile.txt"))
 		{
-			throw new FileNotFoundException("The file 'ReservationsFile.txt' does not exist.");
+			throw new FileNotFoundException("The file 'ReservationFile.txt' does not exist.");
 		}
-		FileStream ReservationsDataLoad = new FileStream("ReservationsFile.txt", FileMode.Open, FileAccess.Read);
+		FileStream ReservationsDataLoad = new FileStream("ReservationFile.txt", FileMode.Open, FileAccess.Read);
 		XmlSerializer serializer = new XmlSerializer(typeof(List<Reservation>));
 		if (ReservationsDataLoad.Length > 0)
 		{
@@ -1113,23 +1127,23 @@ public class HotelSystem
 	{
 		List<Service> services = LoadServicesFromFile();
 		services.Add(service);
-		FileStream ServicesDataSave = new FileStream("ServicesFile.txt", FileMode.Append, FileAccess.Write);
-		XmlSerializer serializer = new XmlSerializer(typeof(List<Payment>));
+		FileStream ServicesDataSave = new FileStream("ServiceFile.txt", FileMode.Append, FileAccess.Write);
+		XmlSerializer serializer = new XmlSerializer(typeof(List<Service>));
 		serializer.Serialize(ServicesDataSave, services);
 		ServicesDataSave.Close();
 	}
 	public List<Service> LoadServicesFromFile()
 	{
 		Services = new List<Service>();
-		if (!File.Exists("ServicesFile.txt"))
+		if (!File.Exists("ServiceFile.txt"))
 		{
-			throw new FileNotFoundException("The file 'ServicesFile.txt' does not exist.");
+			throw new FileNotFoundException("The file 'ServiceFile.txt' does not exist.");
 		}
-		FileStream ServicesDataLoad = new FileStream("ServicesFile.txt", FileMode.Open, FileAccess.Read);
-		XmlSerializer serializer = new XmlSerializer(typeof(List<Payment>));
+		FileStream ServicesDataLoad = new FileStream("ServiceFile.txt", FileMode.Open, FileAccess.Read);
+		XmlSerializer serializer = new XmlSerializer(typeof(List<Service>));
 		if (ServicesDataLoad.Length > 0)
 		{
-			Services = (List<Service>) serializer.Deserialize(ServicesDataLoad);
+			Services = (List<Service>)serializer.Deserialize(ServicesDataLoad);
 		}
 		ServicesDataLoad.Close();
 		return Services;
@@ -1138,7 +1152,7 @@ public class HotelSystem
 	{
 		List<Payment> payments = LoadPaymentsFromFile();
 		payments.Add(payment);
-		FileStream PaymentsDataSave = new FileStream("PaymentsFile.txt", FileMode.Append, FileAccess.Write);
+		FileStream PaymentsDataSave = new FileStream("PaymentFile.txt", FileMode.Append, FileAccess.Write);
 		XmlSerializer serializer = new XmlSerializer(typeof(List<Payment>));
 		serializer.Serialize(PaymentsDataSave, payments);
 		PaymentsDataSave.Close();
@@ -1146,11 +1160,11 @@ public class HotelSystem
 	public List<Payment> LoadPaymentsFromFile()
 	{
 		Payments = new List<Payment>();
-		if (!File.Exists("PaymentsFile.txt"))
+		if (!File.Exists("PaymentFile.txt"))
 		{
-			throw new FileNotFoundException("The file 'PaymentsFile.txt' does not exist.");
+			throw new FileNotFoundException("The file 'PaymentFile.txt' does not exist.");
 		}
-		FileStream PaymentsDataLoad = new FileStream("PaymentsFile.txt", FileMode.Open, FileAccess.Read);
+		FileStream PaymentsDataLoad = new FileStream("PaymentFile.txt", FileMode.Open, FileAccess.Read);
 		XmlSerializer serializer = new XmlSerializer(typeof(List<Payment>));
 		if (PaymentsDataLoad.Length > 0)
 		{
@@ -1165,3 +1179,4 @@ public class HotelSystem
 		Console.ReadKey();
 	}
 }
+
