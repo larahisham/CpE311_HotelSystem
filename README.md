@@ -13,6 +13,7 @@ This project is a console-based Hotel Management System developed in C#. It allo
 
 ## File Structure
 - `HotelSystem.cs`: Main file containing all the classes and methods for managing the hotel system.
+- `Main.cs`: Contains the main static function which primary to run the whole program
 
 ## Classes
 - **IOFiles**: Handles file operations for saving and loading data.
