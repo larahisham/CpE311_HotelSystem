@@ -1,2 +1,2 @@
-# **Project Title**  <!-- Hotel Management System -->
+# **Hotel Management System**  
 
