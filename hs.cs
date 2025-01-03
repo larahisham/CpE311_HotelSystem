@@ -129,29 +129,24 @@ public class Guest
 		Console.WriteLine("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
 
 		HotelSystem HS0 = new HotelSystem();
+		Reservation RS0 = new Reservation();
+		Service RV0 = new Service();
 		switch (KindofUsage)
 		{
 			case 1:
-				Reservation RS0 = new Reservation();
-				//RS0.StartNewReservation();
-				//RS0.Reservationstatus();
+				RS0.StartNewReservation();
 				break;
 			case 2:
-				Reservation RS1 = new Reservation();
-				//RS1.CheckInReservation();
-				//RS1.Reservationstatus();
+				RS0.CheckInReservation();
 				break;
 			case 3:
-				
+				RV0.RequestAService();
 				break;
 			case 4:
-				Reservation RS3 = new Reservation();
-				//RS3.CheckOutReservation();
-				//RS3.Reservationstatus();
+				RS0.CheckOutReservation();
 				break;
 			case 5:
 				Payment PY0 = new Payment();
-				
 				
 				break;
 			case 6:
@@ -244,21 +239,18 @@ public class Manager
 [Serializable]
 public class Service : Guest
 {
-	public string ID
+	public string SID
 	{
 		get;
 		set;
 	}
-	public string Notes
+	public int Notes
 	{
 		get;
 		set;
-	}  // Service notes
-	   //**********************************************************************
-	private string GuestID { get; set; } // Guest ID (from Guest class)
-										 //********************************************************************
+	}
 	int i = 0;
-	private string[] description = { "Car-Rental", "Kids-Zone" }; // Service types
+	private string[] description = { "Car-Rental", "Kids-Zone" }; // Service types (description)
 	public string Description
 	{
 		get
@@ -267,15 +259,58 @@ public class Service : Guest
 		}
 		set
 		{
+
 		}
-	}  // Service description
-	public void CalculateServiceAmount()
+	}
+	public void RequestAService()
 	{
-		// Method to calculate the service amount
+		Console.WriteLine("What Service do you want to get?");
+		int j = 1;
+		foreach (string option in description)
+		{
+			Console.WriteLine("[" + j + "]" + " " + option);
+			j++;
+		}
+		Console.Write("Enter your choice : ");
+		int op = Convert.ToInt32(Console.ReadLine());
+		if (op == 1)
+		{
+			Description = description[0];
+		}
+		else if (op == 2)
+		{
+			Description = description[1];
+		}
+		else
+		{
+			Console.WriteLine("Enter Available service");
+		}
+		CalculateServiceAmount();
+	}
+	public string CalculateServiceAmount()
+	{
+		int TotalServiceAmount;
+		if (Description == description[0])
+		{
+			Console.Write("You choose the Car-Rental service, How many days you want to rent a car? ");
+			int RentalDays = Convert.ToInt32(Console.ReadLine());
+			this.Notes = RentalDays;
+			TotalServiceAmount = 10 * RentalDays;
+			return "Your service will cost : " + TotalServiceAmount;
+		}
+		else if (Description == description[1])
+		{
+			Console.Write("You choose the Kids-Zone service, How many kids do you have? ");
+			int NumberOfKids = Convert.ToInt32(Console.ReadLine());
+			this.Notes = NumberOfKids;
+			TotalServiceAmount = 5 * NumberOfKids;
+			return "Your service will cost : " + TotalServiceAmount;
+		}
+		return " ";
 	}
 }
 [Serializable]
-public class Payment
+public class Payment : Reservation 
 {
 	// banck balance from guest class 
 	public string BillNumber
@@ -290,17 +325,17 @@ public class Payment
 	{
 		get;
 		set;
-	} // total amount could be deleted 
+	}
 	public string PaymentSource
 	{
 		get;
 		set;
-	}  // Payment source ("reservation" or "service")
+	}
 	public string PaymentStatus
 	{
 		get;
 		set;
-	}  // Payment status ("paid", "not paid")
+	}
 	public bool IsbalancePayable(double TotalAmount, Guest g)
 	{
 		double Balance = g.BankBalance;
@@ -314,7 +349,7 @@ public class Payment
 	public void PayForService() { }
 }
 [Serializable]
-public class Room
+public class Room : Guest
 {
 	public int Number
 	{
@@ -397,10 +432,10 @@ public class Room
 	}
 }
 [Serializable]
-public class Reservation : Guest 
+public class Reservation : Room 
 {
 	private static readonly string[] MealOptions = { "Break-fast", "Break-fast and Lunch", "Full-Board" };
-	public string ID
+	public string RID
 	{
 		get;
 		set;
@@ -425,18 +460,30 @@ public class Reservation : Guest
 		get;
 		set;
 	}
-	public Reservation(string ID, DateTime CheckInDate, DateTime CheckOutDate, string MealOption, string ReservationStatus)
+	public Reservation(string RID, DateTime CheckInDate, DateTime CheckOutDate, string MealOption, string ReservationStatus, int Number, string Type, double PricePerDay, bool AvailabilityStatus) :
+		base( Number, Type, PricePerDay, AvailabilityStatus)
 	{
-		this.ID = ID;
+		this.RID = RID;
 		this.CheckInDate = CheckInDate;
 		this.CheckOutDate = CheckOutDate;
 		this.MealOption = MealOption;
 		this.ReservationStatus = ReservationStatus;
 	}
 	public Reservation() { }
-
+	public int GenerateUnique4DigitIDNumber()
+	{
+		HotelSystem hotelSystem = new HotelSystem();
+		List<Reservation> reservations = hotelSystem.LoadReservationsFromFile();
+		int reservationCounter = reservations.Count;
+		int baseNumber = 0004;
+		reservationCounter++;
+		int uniqueIDNumber = baseNumber + reservationCounter;
+		return uniqueIDNumber; 
+	}
 	public bool StartNewReservation()
 	{
+		int UIDN = GenerateUnique4DigitIDNumber();
+		Console.WriteLine("Your Reservation ID is :" + UIDN);
 		Console.WriteLine("Choose the appropriate room for your stay : ");
 		Room room = new Room();
 		room.AvailableRoomsOnly();
@@ -465,6 +512,8 @@ public class Reservation : Guest
 		{
 			Console.WriteLine("Enter Available meal option");
 		}
+		ReservationStatus = "Confirmed";
+
 		if (op != 1 || op != 2 || op != 3)
 		{
 			if (room.AvailableRoomsOnly())
@@ -474,111 +523,88 @@ public class Reservation : Guest
 		}
 		return false;
 	}
-
-
-
-	public int CalculateReservationAmount()
+	public double CalculateReservationAmount()
 	{
-		TimeSpan residenceDays = CheckOutDate - CheckInDate;
-		Console.WriteLine($"Your reservation is for {residenceDays.Days} days.");
-
-		if (MealOption == MealOptions[0])
+		TimeSpan residenceDays = this.CheckOutDate - this.CheckInDate;
+		//Days is a proparity in time span structure 
+		int days = residenceDays.Days;
+		Console.WriteLine($"Your reservation is for {days} days.");
+		double amount = days * this.PricePerDay;
+		if (this.MealOption == MealOptions[0])
 		{
-			int amount = residenceDays * RoomP;
+			return amount;
 		}
-		else if (MealOption == MealOptions[1])
+		else if (this.MealOption == MealOptions[1])
 		{
-			int amount = 1.2 * (residenceDays * RoomP);
+			return 1.2 * amount;
 		}
-		else if (MealOption == MealOptions[2])
+		else if (this.MealOption == MealOptions[2])
 		{
-			int amount = 1.4 * (residenceDays * RoomP);
+			return 1.4 * amount;
 		}
-
+		return 0;
 	}
-
-	public void ApplyDiscount(int amount)
+	public double ApplyDiscount(double amount)
 	{
-	int FinalAmount = amount * 0.6;
+		double FinalAmount = amount * 0.6;
+		return FinalAmount;
 	}
-
-	public void Reservationstatus()
-	{
-		if (StartNewReservation())
-		{
-			ReservationStatus = "Confirmed";
-		}
-		else if (CheckInReservation())
-		{
-			ReservationStatus = "Checked-in";
-		}
-		else if (CheckOutReservation())
-		{
-			ReservationStatus = "Checked-out";
-		}
-	}
-
-	public bool CheckInReservation()
+	public string CheckInReservation()
 	{
 		Console.Write("Please enter your Check-In date (yyyy-MM-dd): ");
 		string checkInInput = Console.ReadLine();
-		if (DateTime.TryParseExact(checkInInput, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out DateTime checkInDate))
+		if (DateTime.TryParseExact(checkInInput, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out DateTime CheckInDate))
 		{
-			if (checkInInput == (("2025-02-01")))
+			this.ReservationStatus = "Checked-in";
+			if (checkInInput == "2025-02-01")
 			{
-				int i = CalculateReservationAmount();
-				ApplyDiscount(i);
+				double i = CalculateReservationAmount();
+				double j = ApplyDiscount(i);
+				return "Your Check-in date is :" + checkInInput + "Your total reservation cost is :" + j;
 			}
 			else if (checkInInput == "2025-04-22")
 			{
-				int i = CalculateReservationAmount();
-				ApplyDiscount(i);
+				double i = CalculateReservationAmount();
+				double j = ApplyDiscount(i);
+				return "Your Check-in date is :" + checkInInput + "Your total reservation cost is :" + j;
 			}
 			else if (checkInInput == "2025-10-10")
 			{
-				int i = CalculateReservationAmount();
-				ApplyDiscount(i);
+				double i = CalculateReservationAmount();
+				double j = ApplyDiscount(i);
+				return "Your Check-in date is :" + checkInInput + "Your total reservation cost is :" + j;
 			}
 			else
 			{
-				CalculateReservationAmount();
+				double i = CalculateReservationAmount();
+				return "Your Check-in date is :" + checkInInput + "Your total reservation cost is :" + i;
 			}
 		}
 		else
 		{
-			Console.WriteLine("Invalid date format. Please enter the date in the format yyyy-MM-dd.");
+			return ("Invalid date format. Please enter the date in the format yyyy-MM-dd.");
 		}
-		return true;
-		return false;
-
 	}
-
-	public bool CheckOutReservation()
+	public string CheckOutReservation()
 	{
-		while (true)
-		{
-			Console.Write("Please enter your Check-Out date (yyyy-MM-dd): ");
+		this.ReservationStatus = "Checked-out";
+		Console.Write("Please enter your Check-Out date (yyyy-MM-dd): ");
 			string checkOutInput = Console.ReadLine();
-			if (DateTime.TryParseExact(checkOutInput, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out DateTime checkOutDate))
+			if (DateTime.TryParseExact(checkOutInput, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out DateTime CheckOutDate))
 			{
 				if (CheckOutDate > CheckInDate)
 				{
-					break;
-				}
+				return "Your Check-Out date is :" + checkOutInput;
+			}
 				else
 				{
-					Console.WriteLine("Check-Out date must be later than Check-In date. Please enter a valid date.");
+					return "Check-Out date must be later than Check-In date. Please enter a valid date.";
 				}
 			}
 			else
 			{
-				Console.WriteLine("Invalid date format. Please enter the date in the format yyyy-MM-dd.");
+				return "Invalid date format. Please enter the date in the format yyyy-MM-dd.";
 			}
-		}
-		// Code to check out a reservation
-		ReservationStatus = "checked-out";
-		return true;
-		return false;
 	}
 }
 [Serializable]
@@ -627,10 +653,10 @@ public class HotelSystem
 		{
 			Console.Write("[" + v + "]");
 			Console.WriteLine(
-				$" Service ID : {service.ID}," +
+				$" Service ID : {service.SID}," +
 				$" Service Description : {service.Description},"+
 				$" Service Notes : {service.Notes},"+
-				$" Guest's national ID (who order this service) : {service}"
+				$" Guest's national ID (who order this service) : {service.ID}"
 				);
 			v++;
 		}
@@ -646,7 +672,7 @@ public class HotelSystem
 				$" Room Type : {payment.PaymentSource},"+
 				$" Room Type : {payment.PaymentStatus}," +
 				$" Room Type : {payment.TotalAmount}," +
-			    $" Guest's national ID (who order this service or reserve a room) : {payment.}" 
+			    $" Guest's national ID (who order this service or reserve a room) : {payment.ID}" 
 				);
 			v++;
 		}
@@ -658,13 +684,13 @@ public class HotelSystem
 		{
 			Console.Write("[" + v + "]");
 			Console.WriteLine(
-				$" Reservation ID : {reservation.ID}," +
+				$" Reservation ID : {reservation.RID}," +
 				$" Check-in Date : {reservation.CheckInDate},"+
 				$" Check-out Date : {reservation.CheckOutDate},"+
 				$" Reservation Status : {reservation.ReservationStatus},"+
 				$" Meals Option : {reservation.MealOption},"+
-			    $" Guest's national ID (who reserve this room) : {reservation.},"+
-			    $" Room Number : {}"
+			    $" Guest's national ID (who reserve this room) : {reservation.ID},"+
+			    $" Room Number : {reservation.Number}"
 				);
 			v++;
 		}
@@ -910,19 +936,19 @@ namespace Program
 								  "[3] Sign-in as new Guest\n" +
 								  "[4] Exit");
 				Console.Write("Enter your choice : ");
-				string KindofUser = Console.ReadLine();
+				int KindofUser =Convert.ToInt32( Console.ReadLine());
 				switch (KindofUser)
 				{
-					case "1":
+					case 1:
 						hotelSystem.LoginG();
 						break;
-					case "2":
+					case 2:
 						hotelSystem.LoginM();
 						break;
-					case "3":
+					case 3:
 						hotelSystem.NewUser();
 						break;
-					case "4":
+					case 4:
 						hotelSystem.Exit();
 						exit = true;
 						break;
