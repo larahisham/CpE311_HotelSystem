@@ -263,8 +263,9 @@ public class Service : Guest
 
 		}
 	}
-	public void RequestAService()
-	{
+
+		public void RequestAService()
+	    {
 		Console.WriteLine("What Service do you want to get?");
 		int j = 1;
 		foreach (string option in description)
@@ -277,17 +278,40 @@ public class Service : Guest
 		if (op == 1)
 		{
 			Description = description[0];
+			Console.Write("Enter the number of rental days : ");
+			int notes = Convert.ToInt32(Console.ReadLine());
+			this.Notes = notes;
 		}
 		else if (op == 2)
 		{
 			Description = description[1];
+			Console.Write("Enter the number of kids : ");
+			int notes = Convert.ToInt32(Console.ReadLine());
+			this.Notes = notes;
 		}
 		else
 		{
 			Console.WriteLine("Enter Available service");
 		}
-		CalculateServiceAmount();
+
+		HotelSystem HSS = new HotelSystem();
+		HSS.SaveServiceToFile(this);
+
+		int fpy =  Convert.ToInt32(CalculateServiceAmount());
+		// Create payment record
+		Payment payment = new Payment();
+		Console.Write("Enter the bill number: ");
+		payment.BillNumber = Console.ReadLine();
+		payment.PaymentSource = Description;
+		payment.TotalAmount = fpy;
+		payment.PaymentStatus = "not paid";
+
+		// Save payment record
+		HSS.SavePaymentToFile(payment);
+
+		Console.WriteLine("Your service request is confirmed. Your bill amount is: " + payment.TotalAmount);
 	}
+
 	public string CalculateServiceAmount()
 	{
 		int TotalServiceAmount;
@@ -309,6 +333,7 @@ public class Service : Guest
 		}
 		return " ";
 	}
+
 }
 [Serializable]
 public class Payment : Reservation 
