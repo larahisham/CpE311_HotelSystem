@@ -113,7 +113,7 @@ public class Guest
 			"\nYour Phone Number is : " + PhoneNumber +
 			"\nYour Bank Balance is : " + BankBalance;
 	}
-	public void GuestFunctions()
+	public void GuestFunctions(Guest guest)
 	{
 		Console.WriteLine("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
 		Console.WriteLine("You're here to? Pleas Select a number...\n\n\n" +
@@ -134,24 +134,24 @@ public class Guest
 		switch (KindofUsage)
 		{
 			case 1:
-				Reservation R0 = RS0.StartNewReservation();
+				Reservation R0 = RS0.StartNewReservation(guest);
 				HS0.AddReservation(R0);
 				break;
 			case 2:
-				RS0.CheckInReservation();
+				RS0.CheckInReservation(guest.ID);
 				break;
 			case 3:
 				RV0.RequestAService();
 				break;
 			case 4:
-				RS0.CheckOutReservation();
+				RS0.CheckOutReservation(guest.ID);
 				break;
 			case 5:
 				Payment PY0 = new Payment();
-				
+
 				break;
 			case 6:
-				
+
 				break;
 			case 7:
 				HS0.LogoutG();
@@ -756,27 +756,19 @@ public class HotelSystem
 			v++;
 		}
 	}
-
 	public void UpdateReservationInFile(Reservation updatedReservation)
 	{
 		List<Reservation> reservations = LoadReservationsFromFile();
-
-		// Find the index of the reservation to be updated
-		int index = reservations.FindIndex(r => r.RID == updatedReservation.RID);
-		if (index != -1)
+		int i = reservations.FindIndex(r => r.RID == updatedReservation.RID);
+		if (i != -1)
 		{
-			reservations[index] = updatedReservation;
-
-			// Save the updated reservations list back to the file
+			reservations[i] = updatedReservation;
 			FileStream ReservationsDataSave = new FileStream("ReservationsFile.txt", FileMode.Create, FileAccess.Write);
 			XmlSerializer serializer = new XmlSerializer(typeof(List<Reservation>));
 			serializer.Serialize(ReservationsDataSave, reservations);
 			ReservationsDataSave.Close();
 		}
 	}
-
-
-
 	public void ViewAllRooms()
 	{
 		int v = 1;
@@ -792,7 +784,7 @@ public class HotelSystem
 			v++;
 		}
 	}
-	public string LoginM()
+	public bool LoginM()
 	{
 		Console.Write("Enter your ID :");
 		string id = Console.ReadLine();
@@ -866,9 +858,9 @@ public class HotelSystem
 		Console.WriteLine("Your registration is successfully done! Welcome ");
 		SaveGuestToFile(NewGuest);
 	}
-	public string LoginG()
+	public Guest LoginG()
 	{
-		Console.WriteLine(); Console.WriteLine();
+		Console.WriteLine();
 		List<Guest> Guests = LoadGuestsFromFile();
 		Console.Write("Enter your ID : ");
 		string id = Console.ReadLine();
@@ -889,8 +881,9 @@ public class HotelSystem
 		if (p != null)
 		{
 			Console.WriteLine("Log-in process is successfully done! Welcome");
-			p.GuestFunctions();
-			return id;
+
+			p.GuestFunctions(p);
+			return p;
 		}
 		else
 		{
@@ -900,7 +893,7 @@ public class HotelSystem
 	}
 	public void LogoutG()
 	{
-		if (LoginG())
+		if (LoginG() != null)
 		{
 			Console.WriteLine("Thanks for Choosing us! We hope you had a delightful experience and look forward to welcoming you back soon." +
 				"\nGoodbye!");
@@ -1023,6 +1016,7 @@ public class HotelSystem
 		Console.ReadKey();
 	}
 }
+
 namespace Program
 {
 	class Program
@@ -1046,7 +1040,11 @@ namespace Program
 				switch (KindofUser)
 				{
 					case 1:
-						hotelSystem.LoginG();
+						Guest loggedInGuest = hotelSystem.LoginG();
+						if (loggedInGuest != null)
+						{
+							loggedInGuest.GuestFunctions(loggedInGuest);
+						}
 						break;
 					case 2:
 						hotelSystem.LoginM();
