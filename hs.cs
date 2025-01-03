@@ -170,7 +170,6 @@ public class Guest
 		}
 		return false;
 	}
-//public override int GetHashCode(){}
 }
 [Serializable]
 public class Manager
@@ -1233,7 +1232,6 @@ public class HotelSystem
 		Console.ReadKey();
 	}
 }
-
 namespace Program
 {
 	class Program
