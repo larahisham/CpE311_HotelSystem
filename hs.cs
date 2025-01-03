@@ -134,10 +134,11 @@ public class Guest
 		switch (KindofUsage)
 		{
 			case 1:
-				RS0.StartNewReservation();
+				Reservation R0 = RS0.StartNewReservation();
+				HS0.AddReservation(R0);
 				break;
 			case 2:
-				RS0.CheckInReservation();
+				RS0.CheckInReservation(RS0.CheckInDate);
 				break;
 			case 3:
 				RV0.RequestAService();
@@ -168,7 +169,7 @@ public class Guest
 		}
 		return false;
 	}
-	//public override int GetHashCode(){}
+//public override int GetHashCode(){}
 }
 [Serializable]
 public class Manager
@@ -388,9 +389,6 @@ public class Room : Guest
 		List<Room> list;
 		HotelSystem hS = new HotelSystem();
 		list = hS.LoadRoomsFromFile();
-		// for all rooms
-
-
 		List<Room> AvailableRooms = new List<Room>();
 		foreach (Room i in list)
 		{
@@ -407,6 +405,7 @@ public class Room : Guest
 			Console.WriteLine($" Room Number: {room.Number}, Room Type: {room.Type}");
 			j++;
 		}
+
 		// print available rooms only 
 		Console.Write("Enter your choice : ");
 		string y0 = Console.ReadLine();
@@ -435,7 +434,7 @@ public class Room : Guest
 public class Reservation : Room 
 {
 	private static readonly string[] MealOptions = { "Break-fast", "Break-fast and Lunch", "Full-Board" };
-	public string RID
+	public int RID
 	{
 		get;
 		set;
@@ -460,7 +459,7 @@ public class Reservation : Room
 		get;
 		set;
 	}
-	public Reservation(string RID, DateTime CheckInDate, DateTime CheckOutDate, string MealOption, string ReservationStatus, int Number, string Type, double PricePerDay, bool AvailabilityStatus) :
+	public Reservation(int RID, DateTime CheckInDate, DateTime CheckOutDate, string MealOption, string ReservationStatus, int Number, string Type, double PricePerDay, bool AvailabilityStatus) :
 		base( Number, Type, PricePerDay, AvailabilityStatus)
 	{
 		this.RID = RID;
@@ -470,23 +469,24 @@ public class Reservation : Room
 		this.ReservationStatus = ReservationStatus;
 	}
 	public Reservation() { }
+
 	public int GenerateUnique4DigitIDNumber()
 	{
 		HotelSystem hotelSystem = new HotelSystem();
 		List<Reservation> reservations = hotelSystem.LoadReservationsFromFile();
 		int reservationCounter = reservations.Count;
-		int baseNumber = 0004;
+		int baseNumber = 0000; 
 		reservationCounter++;
 		int uniqueIDNumber = baseNumber + reservationCounter;
 		return uniqueIDNumber; 
 	}
-	public bool StartNewReservation()
+	public Reservation StartNewReservation()
 	{
-		int UIDN = GenerateUnique4DigitIDNumber();
-		Console.WriteLine("Your Reservation ID is :" + UIDN);
 		Console.WriteLine("Choose the appropriate room for your stay : ");
 		Room room = new Room();
 		room.AvailableRoomsOnly();
+
+
 		Console.WriteLine("Select the meal option that suits you best : ");
 		int i = 1;
 		foreach (string option in MealOptions)
@@ -496,33 +496,45 @@ public class Reservation : Room
 		}
 		Console.Write("Enter your choice : ");
 		int op = Convert.ToInt32(Console.ReadLine());
-		if (op == 1)
+		if (op >= 1 && op <= 3)
 		{
-			MealOption = MealOptions[0];
-		}
-		else if (op == 2)
-		{
-			MealOption = MealOptions[1];
-		}
-		else if (op == 3)
-		{
-			MealOption = MealOptions[2];
+			MealOption = MealOptions[op - 1];
 		}
 		else
 		{
 			Console.WriteLine("Enter Available meal option");
+			return null;
 		}
-		ReservationStatus = "Confirmed";
-
-		if (op != 1 || op != 2 || op != 3)
+		this.RID = GenerateUnique4DigitIDNumber();
+		Console.WriteLine("Your Reservation ID is :" + RID); Console.WriteLine("\n"); 
+		Console.Write("Please enter your Check-In date (yyyy-MM-dd): ");
+		string checkInInput = Console.ReadLine();
+		if (DateTime.TryParseExact(checkInInput, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out DateTime checkInDate))
 		{
-			if (room.AvailableRoomsOnly())
-			{
-				return true;
-			}
+			this.CheckInDate = checkInDate;
 		}
-		return false;
+		else
+		{
+			Console.WriteLine("Invalid date format. Please enter the date in the format yyyy-MM-dd.");
+		}
+		this.ReservationStatus = "Confirmed";
+		return this; 
+		
 	}
+
+	/*
+	 string checkInInput = Console.ReadLine();
+if (DateTime.TryParseExact(checkInInput, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out DateTime checkInDate))
+{
+    this.CheckInDate = checkInDate;
+}
+else
+{
+    Console.WriteLine("Invalid date format. Please enter the date in the format yyyy-MM-dd.");
+}
+
+	 */
+
 	public double CalculateReservationAmount()
 	{
 		TimeSpan residenceDays = this.CheckOutDate - this.CheckInDate;
@@ -549,13 +561,65 @@ public class Reservation : Room
 		double FinalAmount = amount * 0.6;
 		return FinalAmount;
 	}
-	public string CheckInReservation()
+
+/*
+	public string CheckInReservation(DateTime checkInInput)
 	{
-		Console.Write("Please enter your Check-In date (yyyy-MM-dd): ");
-		string checkInInput = Console.ReadLine();
 		if (DateTime.TryParseExact(checkInInput, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out DateTime CheckInDate))
 		{
-			this.ReservationStatus = "Checked-in";
+			double reservationCost = CalculateReservationAmount();
+			string[] discountDates = { "2025-02-01", "2025-04-22", "2025-10-10" };
+
+			if (discountDates.Contains(checkInInput.ToString("yyyy-MM-dd")))
+			{
+				reservationCost = ApplyDiscount(reservationCost);
+			}
+
+			return "Your Check-in date is: " + checkInInput.ToString("yyyy-MM-dd") + ". Your total reservation cost is: " + reservationCost;
+		}
+		else
+		{
+			return "Invalid date format. Please enter the date in the format yyyy-MM-dd.";
+		}
+	}
+*/
+	 public string CheckInReservation(DateTime checkInInput, string id)
+     {
+		List<Reservation> list;
+		HotelSystem HS0 = new HotelSystem();
+		list = HS0.LoadReservationsFromFile();
+		List<Reservation> AvailableReservation = new List<Reservation>();
+		foreach (Reservation i in list)
+		{
+			if (i.ReservationStatus == "Confirmed" && i.ID == id)
+			{
+				AvailableReservation.Add(i);
+			}
+		}
+		int j = 1;
+		foreach (Reservation reservation in AvailableReservation)
+		{
+			Console.Write("[" + j + "]");
+			Console.WriteLine($" : {reservation.}, : {}");
+			j++;
+		}
+
+		string checkInDateStr = checkInInput.ToString("yyyy-MM-dd");
+    double reservationCost = CalculateReservationAmount();
+    string[] discountDates = { "2025-02-01", "2025-04-22", "2025-10-10" };
+    
+    if (discountDates.Contains(checkInDateStr))
+    {
+        reservationCost = ApplyDiscount(reservationCost);
+    }
+    return "Your Check-in date is: " + checkInDateStr + ". Your total reservation cost is: " + reservationCost;
+   }
+
+
+	/*public string CheckInReservation(DateTime checkInInput)
+	{
+		if (DateTime.TryParseExact(checkInInput, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out DateTime CheckInDate))
+		{
 			if (checkInInput == "2025-02-01")
 			{
 				double i = CalculateReservationAmount();
@@ -585,8 +649,34 @@ public class Reservation : Room
 			return ("Invalid date format. Please enter the date in the format yyyy-MM-dd.");
 		}
 	}
+	*/
+
+
+
+
 	public string CheckOutReservation()
 	{
+		List<Reservation> list;
+		HotelSystem HS0 = new HotelSystem();
+		list = HS0.LoadReservationsFromFile();
+		List<Reservation> AvailableReservation = new List<Reservation>();
+		foreach (Reservation i in list)
+		{
+			if (i.ReservationStatus == "Confirmed")
+			{
+				AvailableReservation.Add(i);
+			}
+		}
+		int j = 1;
+		foreach (Room room in AvailableReservation)
+		{
+			Console.Write("[" + j + "]");
+			Console.WriteLine($" Room Number: {room.Number}, Room Type: {room.Type}");
+			j++;
+		}
+
+
+
 		this.ReservationStatus = "Checked-out";
 		Console.Write("Please enter your Check-Out date (yyyy-MM-dd): ");
 			string checkOutInput = Console.ReadLine();
@@ -710,7 +800,7 @@ public class HotelSystem
 			v++;
 		}
 	}
-	public bool LoginM()
+	public string LoginM()
 	{
 		Console.Write("Enter your ID :");
 		string id = Console.ReadLine();
@@ -731,7 +821,7 @@ public class HotelSystem
 	}
 	public void LogoutM()
 	{
-		if (LoginM())
+		if (LoginM() != null)
 		{
 			Console.WriteLine(" You loged-out successfully, Goodbye");
 		}
@@ -784,7 +874,7 @@ public class HotelSystem
 		Console.WriteLine("Your registration is successfully done! Welcome ");
 		SaveGuestToFile(NewGuest);
 	}
-	public bool LoginG()
+	public string LoginG()
 	{
 		Console.WriteLine(); Console.WriteLine();
 		List<Guest> Guests = LoadGuestsFromFile();
@@ -808,12 +898,12 @@ public class HotelSystem
 		{
 			Console.WriteLine("Log-in process is successfully done! Welcome");
 			p.GuestFunctions();
-			return true;
+			return id;
 		}
 		else
 		{
 			Console.WriteLine("Error, re-check your Password or ID, it does not compatable with any that is in our system!");
-			return false;
+			return null;
 		}
 	}
 	public void LogoutG()
@@ -865,15 +955,6 @@ public class HotelSystem
 		RoomsDataLoad.Close();
 		return Rooms;
 	}
-	public void AddRoom(Room room)
-	{
-		Rooms.Add(room);
-		SaveRoomToFile(room);
-	}
-	public void SaveRoomToFile(Room room)
-	{
-		// Code to save room data to file
-	}
 	public void AddReservation(Reservation reservation)
 	{
 		Reservations.Add(reservation);
@@ -881,7 +962,27 @@ public class HotelSystem
 	}
 	public void SaveReservationToFile(Reservation reservation)
 	{
-		// Code to save reservation data to file
+		List<Reservation> reservations = LoadReservationsFromFile();
+		reservations.Add(reservation);
+		FileStream ReservationsDataSave = new FileStream("ReservationsFile.txt", FileMode.Append, FileAccess.Write);
+		XmlSerializer serializer = new XmlSerializer(typeof(List<Reservation>));
+		serializer.Serialize(ReservationsDataSave, reservations);
+		ReservationsDataSave.Close();
+	}
+
+	public void AddRoom(Room room)
+	{
+		Rooms.Add(room);
+		SaveRoomToFile(room);
+	}
+	public void SaveRoomToFile(Room room)
+	{
+		List<Room> rooms = LoadRoomsFromFile();
+		rooms.Add(room);
+		FileStream RoomsDataSave = new FileStream("RoomsFile.txt", FileMode.Append, FileAccess.Write);
+		XmlSerializer serializer = new XmlSerializer(typeof(List<Room>));
+		serializer.Serialize(RoomsDataSave, rooms);
+		RoomsDataSave.Close();
 	}
 	public void AddPayment(Payment payment)
 	{
@@ -900,7 +1001,12 @@ public class HotelSystem
 	}
 	public void SaveServiceToFile(Service service)
 	{
-		// Code to save service data to file
+		List<Service> services = LoadServicesFromFile();
+		services.Add(service);
+		FileStream ServicesDataSave = new FileStream("ServicesFile.txt", FileMode.Append, FileAccess.Write);
+		XmlSerializer serializer = new XmlSerializer(typeof(List<Service>));
+		serializer.Serialize(ServicesDataSave, services);
+		ServicesDataSave.Close();
 	}
 	public List<Service> LoadServicesFromFile()
 	{
@@ -908,6 +1014,12 @@ public class HotelSystem
 	}
 	public void SavePaymentToFile(Payment payment)
 	{
+		List<Payment> payments = LoadPaymentsFromFile();
+		payments.Add(payment);
+		FileStream PaymentsDataSave = new FileStream("PaymentsFile.txt", FileMode.Append, FileAccess.Write);
+		XmlSerializer serializer = new XmlSerializer(typeof(List<Payment>));
+		serializer.Serialize(PaymentsDataSave, payments);
+		PaymentsDataSave.Close();
 	}
 	public List<Payment> LoadPaymentsFromFile()
 	{
@@ -926,9 +1038,6 @@ namespace Program
 		static void Main(string[] args)
 		{
 			HotelSystem hotelSystem = new HotelSystem();
-			bool exit = false;
-			while (!exit)
-			{
 				Console.WriteLine("Welcome to our hotel self-service system...");
 				Console.WriteLine("Please select a number to complete \n\n" +
 								  "[1] Log-in as Guest\n" +
@@ -936,7 +1045,7 @@ namespace Program
 								  "[3] Sign-in as new Guest\n" +
 								  "[4] Exit");
 				Console.Write("Enter your choice : ");
-				int KindofUser =Convert.ToInt32( Console.ReadLine());
+				int KindofUser = Convert.ToInt32( Console.ReadLine());
 				switch (KindofUser)
 				{
 					case 1:
@@ -950,13 +1059,11 @@ namespace Program
 						break;
 					case 4:
 						hotelSystem.Exit();
-						exit = true;
 						break;
 					default:
 						Console.WriteLine("Invalid choice, please try again.");
 						break;
 				}
 			}
-		}
 	}
 }
