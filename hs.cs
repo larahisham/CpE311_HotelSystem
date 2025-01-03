@@ -264,8 +264,8 @@ public class Service : Guest
 		}
 	}
 
-		public void RequestAService()
-	    {
+	public void RequestAService()
+	{
 		Console.WriteLine("What Service do you want to get?");
 		int j = 1;
 		foreach (string option in description)
@@ -292,24 +292,21 @@ public class Service : Guest
 		else
 		{
 			Console.WriteLine("Enter Available service");
+			return;
 		}
 
+		// Save service record
 		HotelSystem HSS = new HotelSystem();
 		HSS.SaveServiceToFile(this);
 
-		int fpy =  Convert.ToInt32(CalculateServiceAmount());
-		// Create payment record
+		// Calculate the amount for the service
+		int totalAmount = Convert.ToInt32(CalculateServiceAmount());
+
+		// Create and save payment record
 		Payment payment = new Payment();
-		Console.Write("Enter the bill number: ");
-		payment.BillNumber = Console.ReadLine();
-		payment.PaymentSource = Description;
-		payment.TotalAmount = fpy;
-		payment.PaymentStatus = "not paid";
+		payment.CreatePaymentRecord(Description, totalAmount);
 
-		// Save payment record
-		HSS.SavePaymentToFile(payment);
-
-		Console.WriteLine("Your service request is confirmed. Your bill amount is: " + payment.TotalAmount);
+		Console.WriteLine($"Your service request is confirmed. Your bill number is: {payment.BillNumber}. Your bill amount is: {payment.TotalAmount}");
 	}
 
 	public string CalculateServiceAmount()
@@ -367,12 +364,34 @@ public class Payment : Reservation
 		double Balance = g.BankBalance;
 		return TotalAmount <= Balance;
 	}
-	public void CreatePaymentRecord(string reservationID, double amount, string source) { }
+	public void CreateAndSavePaymentRecord(string paymentSource, double totalAmount)
+	{
+		this.BillNumber = GenerateUniqueBillNumber().ToString();
+		this.PaymentSource = paymentSource;
+		this.TotalAmount = totalAmount;
+		this.PaymentStatus = "not paid";
+
+		// Save the payment record
+		HotelSystem hotelSystem = new HotelSystem();
+		hotelSystem.SavePaymentToFile(this);
+	}
+	public int GenerateUniqueBillNumber()
+	{
+		HotelSystem hotelSystem = new HotelSystem();
+		List<Payment> payments = hotelSystem.LoadPaymentsFromFile();
+		int paymentCounter = payments.Count;
+		int baseNumber = 0000; // Starting number for bill numbers
+		paymentCounter++;
+		int uniqueBillNumber = baseNumber + paymentCounter;
+		return uniqueBillNumber;
+	}
+	/*
 	public void CalculateTotalBillAmount() { }
 	public void UpdatePaymentStatus(string newStatus) { }
 	public void GenerationOfProfitReport() { }
 	public void PayForReservation() { }
-	public void PayForService() { }
+	public void PayForService() { }*/
+
 }
 [Serializable]
 public class Room : Guest
@@ -561,14 +580,16 @@ public class Reservation : Room
 		HotelSystem hotelSystem = new HotelSystem();
 		hotelSystem.AddReservation(this);
 
-		Payment payment = new Payment
-		{
-		};
+		// Calculate the amount for the reservation
+		double totalAmount = CalculateReservationAmount();
 
-		hotelSystem.AddPayment(payment);
+		// Create and save payment record
+		Payment payment = new Payment();
+		payment.CreateAndSavePaymentRecord ("Reservation", totalAmount);
+
 		room.AvailabilityStatus = false;
 		hotelSystem.SaveRoomToFile(room);
-		Console.WriteLine("Your reservation is confirmed. Reservation ID: " + this.RID);
+		Console.WriteLine($"Your reservation is confirmed. Reservation ID: {this.RID}. Your bill number is: {payment.BillNumber}. Your bill amount is: {payment.TotalAmount}");
 		return this;
 	}
 
