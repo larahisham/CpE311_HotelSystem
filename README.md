@@ -1,4 +1,4 @@
-# Hotel Management System
+# Hotel Management & Self-Service System
 
 ## Introduction
 This project is a console-based Hotel Management System developed in C#.
