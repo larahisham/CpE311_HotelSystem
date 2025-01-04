@@ -1,4 +1,4 @@
-﻿using System.Xml.Serialization;
+using System.Xml.Serialization;
 using System;
 using System.IO;
 [Serializable]
@@ -232,9 +232,19 @@ public class Service : Guest
 {
 	public string SID { get; set; }
 	public int Notes { get; set; }
-	private string[] description = { "Car-Rental", "Kids-Zone" }; 
+	private string[] description = { "Car-Rental", "Kids-Zone" };
 	public string Description { get; set; }
-	public void RequestAService(string guestID)
+
+	public string GenerateUnique4DigitIDNumber()
+	{
+		HotelSystem hotelSystem = new HotelSystem();
+		List<Service> services = hotelSystem.LoadServicesFromFile();
+		int servicesCounter = services.Count;
+		servicesCounter++;
+		return servicesCounter.ToString("D4");
+	}
+
+	public Service RequestAService(string guestID)
 	{
 		Console.WriteLine("What Service do you want to get?");
 		int j = 1;
@@ -262,24 +272,22 @@ public class Service : Guest
 		else
 		{
 			Console.WriteLine("Enter Available service");
-			return;
+			return null;
 		}
+		SID = GenerateUnique4DigitIDNumber();
+		this.ID = guestID;
 		HotelSystem HSS = new HotelSystem();
 		HSS.SaveServiceToFile(this);
 		string totalAmount = CalculateServiceAmount();
 		string amountString = totalAmount.Split(':')[1].Trim();
 		int amount;
-		if (int.TryParse(amountString, out amount))
-		{
-			Payment payment = new Payment();
-			payment.CreateAndSavePaymentRecord(Description, amount, guestID);
-			Console.WriteLine($"Your service request is confirmed. Your bill number is: {payment.BillNumber}. Your bill amount is: {payment.TotalAmount}");
-		}
-		else
-		{
-			Console.WriteLine("Error: Unable to parse the total amount.");
-		}
+		double TA = Convert.ToDouble(amountString);
+		Payment payment = new Payment();
+		payment.CreateAndSavePaymentRecord("Service", TA, guestID);
+		Console.WriteLine($"Your service is confirmed.\nService ID: {this.SID}.\nYour bill number is: {payment.BillNumber}.\nYour bill amount is: {payment.TotalAmount}");
+		return this;
 	}
+
 	public string CalculateServiceAmount()
 	{
 		int TotalServiceAmount;
@@ -321,7 +329,7 @@ public class Payment : Reservation
 	}
 	public Payment()
 	{
-		
+
 	}
 	public bool IsbalancePayable(double TotalAmount, Guest g)
 	{
@@ -334,7 +342,7 @@ public class Payment : Reservation
 		this.PaymentSource = paymentSource;
 		this.TotalAmount = totalAmount;
 		this.PaymentStatus = "not paid";
-		this.ID = guestID; 
+		this.ID = guestID;
 		HotelSystem hotelSystem = new HotelSystem();
 		hotelSystem.AddPayment(this);
 	}
@@ -414,6 +422,8 @@ public class Payment : Reservation
 		hotelSystem.UpdatePaymentInFile(selectedPayment);
 		Console.WriteLine("Payment successful. Your service payment status is now 'paid'.");
 	}
+
+
 	public void GenerationOfProfitReport()
 	{
 		double totalRoomReservations = 0;
@@ -651,15 +661,12 @@ public class Reservation : Room
 		this.Type = selectedRoom.Type;
 		this.PricePerDay = selectedRoom.PricePerDay;
 		this.AvailabilityStatus = selectedRoom.AvailabilityStatus;
-
 		hotelSystem.AddReservation(this);
 		double totalAmount = CalculateReservationAmount();
 		Payment payment = new Payment();
 		payment.CreateAndSavePaymentRecord("Reservation", totalAmount, guest.ID);
-
 		selectedRoom.AvailabilityStatus = false;
 		hotelSystem.UpdateRoomFile(selectedRoom);
-
 		Console.WriteLine($"Your reservation is confirmed.\nReservation ID: {this.RID}.\nYour bill number is: {payment.BillNumber}.\nYour bill amount is: {payment.TotalAmount}");
 		return this;
 	}
@@ -778,12 +785,37 @@ public class HotelSystem
 
 	public void ReloadData()
 	{
+		if (!File.Exists("RoomsFile.txt") || new FileInfo("RoomsFile.txt").Length == 0)
+		{
+			ioFiles.RoomsFile();
+		}
 		Rooms = LoadRoomsFromFile();
+
+		if (!File.Exists("GuestsFile.txt") || new FileInfo("GuestsFile.txt").Length == 0)
+		{
+			ioFiles.GuestFile();
+		}
 		Guests = LoadGuestsFromFile();
-		Payments = LoadPaymentsFromFile();
-		Services = LoadServicesFromFile();
+
+		if (!File.Exists("ReservationFile.txt") || new FileInfo("ReservationFile.txt").Length == 0)
+		{
+			ioFiles.ReservationFile();
+		}
 		Reservations = LoadReservationsFromFile();
+
+		if (!File.Exists("ServiceFile.txt") || new FileInfo("ServiceFile.txt").Length == 0)
+		{
+			ioFiles.ServiceFile();
+		}
+		Services = LoadServicesFromFile();
+
+		if (!File.Exists("PaymentFile.txt") || new FileInfo("PaymentFile.txt").Length == 0)
+		{
+			ioFiles.PaymentFile();
+		}
+		Payments = LoadPaymentsFromFile();
 	}
+
 
 	public void ViewAllGuests()
 	{
