@@ -1,66 +1,4 @@
 using System.Xml.Serialization;
-using System;
-using System.IO;
-[Serializable]
-public class IOFiles
-{
-	public void RoomsFile(List<Room> rooms = null)
-	{
-		if (rooms == null)
-		{
-			rooms = new List<Room>
-			{
-			new Room(442, "Single", 25, true),
-			new Room(102, "Double", 30, true),
-			new Room(506, "Double", 32, false),
-			new Room(702, "Suit", 40, true),
-			new Room(333, "Double", 34, true)
-			};
-		}
-		FileStream RoomsData = new FileStream("RoomsFile.txt", FileMode.Create, FileAccess.Write);
-		XmlSerializer serializer = new XmlSerializer(typeof(List<Room>));
-		serializer.Serialize(RoomsData, rooms);
-		RoomsData.Close();
-	}
-	public void GuestFile()
-	{
-		List<Guest> guests = new List<Guest>
-			{
-			 new Guest("12345", "Omar", "11", 05215, 450),
-			 new Guest("12546", "Khaled", "22", 01459, 550),
-			 new Guest("16556", "Salma", "33", 04122, 660),
-			 new Guest("18730", "Ahmad", "44", 02250, 720)
-			};
-		FileStream GuestsData = new FileStream("GuestsFile.txt", FileMode.Create, FileAccess.Write);
-		XmlSerializer serializer = new XmlSerializer(typeof(List<Guest>));
-		serializer.Serialize(GuestsData, guests);
-		GuestsData.Close();
-	}
-	public void ReservationFile()
-	{
-		FileStream ReservationData = new FileStream("ReservationFile.txt", FileMode.Create, FileAccess.Write);
-		List<Reservation> Reservation = new List<Reservation>();
-		XmlSerializer serializer = new XmlSerializer(typeof(List<Reservation>));
-		serializer.Serialize(ReservationData, Reservation);
-		ReservationData.Close();
-	}
-	public void ServiceFile()
-	{
-		FileStream ServiceData = new FileStream("ServiceFile.txt", FileMode.Create, FileAccess.Write);
-		List<Service> services = new List<Service>();
-		XmlSerializer serializer = new XmlSerializer(typeof(List<Service>));
-		serializer.Serialize(ServiceData, services);
-		ServiceData.Close();
-	}
-	public void PaymentFile()
-	{
-		FileStream PaymentData = new FileStream("PaymentFile.txt", FileMode.Create, FileAccess.Write);
-		List<Payment> payments = new List<Payment>();
-		XmlSerializer serializer = new XmlSerializer(typeof(List<Payment>));
-		serializer.Serialize(PaymentData, payments);
-		PaymentData.Close();
-	}
-}
 [Serializable]
 public class Guest
 {
@@ -622,7 +560,7 @@ public class Reservation : Room
 		DateTime checkInDate;
 		while (!DateTime.TryParseExact(checkInInput, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out checkInDate))
 		{
-			Console.WriteLine("Invalid date format. Please enter the date in the format yyyy-MM-dd.");
+			Console.WriteLine("Invalid date format. Please enter the date in the format yyyy-MM-dd:");
 			checkInInput = Console.ReadLine();
 		}
 
@@ -631,7 +569,7 @@ public class Reservation : Room
 		DateTime checkOutDate;
 		while (!DateTime.TryParseExact(checkOutInput, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out checkOutDate) || checkOutDate <= checkInDate)
 		{
-			Console.WriteLine("Invalid date format or Check-Out date must be later than Check-In date. Please enter a valid date.");
+			Console.WriteLine("Invalid date format or Check-Out date must be later than Check-In date. Please enter a valid date:");
 			checkOutInput = Console.ReadLine();
 		}
 
@@ -646,7 +584,7 @@ public class Reservation : Room
 		int mealOptionIndex = Convert.ToInt32(Console.ReadLine());
 		while (mealOptionIndex < 1 || mealOptionIndex > MealOptions.Length)
 		{
-			Console.WriteLine("Invalid choice. Enter Available meal option.");
+			Console.WriteLine("Invalid choice. Enter Available meal option :");
 			mealOptionIndex = Convert.ToInt32(Console.ReadLine());
 		}
 		string mealOption = MealOptions[mealOptionIndex - 1];
@@ -670,7 +608,6 @@ public class Reservation : Room
 		Console.WriteLine($"Your reservation is confirmed.\nReservation ID: {this.RID}.\nYour bill number is: {payment.BillNumber}.\nYour bill amount is: {payment.TotalAmount}");
 		return this;
 	}
-
 	public double CalculateReservationAmount()
 	{
 		TimeSpan residenceDays = this.CheckOutDate - this.CheckInDate;
@@ -766,6 +703,66 @@ public class Reservation : Room
 		}
 		hotelSystem.UpdateReservationInFile(selectedReservation);
 		return "Check-out successful. Your reservation status is now 'Checked-out'.";
+	}
+}
+[Serializable]
+public class IOFiles
+{
+	public void RoomsFile(List<Room> rooms = null)
+	{
+		if (rooms == null)
+		{
+			rooms = new List<Room>
+			{
+			new Room(442, "Single", 25, true),
+			new Room(102, "Double", 30, true),
+			new Room(506, "Double", 32, false),
+			new Room(702, "Suit", 40, true),
+			new Room(333, "Double", 34, true)
+			};
+		}
+		FileStream RoomsData = new FileStream("RoomsFile.txt", FileMode.Create, FileAccess.Write);
+		XmlSerializer serializer = new XmlSerializer(typeof(List<Room>));
+		serializer.Serialize(RoomsData, rooms);
+		RoomsData.Close();
+	}
+	public void GuestFile()
+	{
+		List<Guest> guests = new List<Guest>
+			{
+			 new Guest("12345", "Omar", "11", 05215, 450),
+			 new Guest("12546", "Khaled", "22", 01459, 550),
+			 new Guest("16556", "Salma", "33", 04122, 660),
+			 new Guest("18730", "Ahmad", "44", 02250, 720)
+			};
+		FileStream GuestsData = new FileStream("GuestsFile.txt", FileMode.Create, FileAccess.Write);
+		XmlSerializer serializer = new XmlSerializer(typeof(List<Guest>));
+		serializer.Serialize(GuestsData, guests);
+		GuestsData.Close();
+	}
+	public void ReservationFile()
+	{
+		FileStream ReservationData = new FileStream("ReservationFile.txt", FileMode.Create, FileAccess.Write);
+		List<Reservation> Reservation = new List<Reservation>();
+		XmlSerializer serializer = new XmlSerializer(typeof(List<Reservation>));
+		serializer.Serialize(ReservationData, Reservation);
+		ReservationData.Close();
+	}
+	public void ServiceFile()
+	{
+		FileStream ServiceData = new FileStream("ServiceFile.txt", FileMode.Create, FileAccess.Write);
+		List<Service> services = new List<Service>();
+		XmlSerializer serializer = new XmlSerializer(typeof(List<Service>));
+		serializer.Serialize(ServiceData, services);
+		ServiceData.Close();
+	}
+	public void PaymentFile()
+	{
+		FileStream PaymentData = new FileStream("PaymentFile.txt", FileMode.Create, FileAccess.Write);
+		List<Payment> payments = new List<Payment>();
+		XmlSerializer serializer = new XmlSerializer(typeof(List<Payment>));
+		serializer.Serialize(PaymentData, payments);
+		PaymentData.Close();
 	}
 }
 [Serializable]
@@ -1250,8 +1247,17 @@ public class HotelSystem
 
 	public void AddReservation(Reservation reservation)
 	{
-		Reservations.Add(reservation);
-		SaveReservationToFile(reservation);
+		Reservations = LoadReservationsFromFile();
+		bool exists = Reservations.Any(r => r.RID == reservation.RID && r.ID == reservation.ID);
+		if (!exists)
+		{
+			Reservations.Add(reservation);
+			SaveReservationToFile(reservation);
+		}
+		else
+		{
+			Console.WriteLine("Reservation with this ID already exists.");
+		}
 	}
 
 	public void AddRoom(Room room)
