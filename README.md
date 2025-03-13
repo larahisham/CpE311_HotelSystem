@@ -36,3 +36,4 @@ To use the system, run the `Program` class, which will present a menu with the f
 
 ## Contact 
 For any questions or inquiries, please contact larahishamahmadby@gmail.com or lhbaniyasin22@cit.just.edu.jo
+## LICENSE
