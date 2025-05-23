@@ -38,5 +38,4 @@ To use the system, run the `Program` class, which will present a menu with the f
 For any questions or inquiries, please contact larahishamahmadby@gmail.com or lhbaniyasin22@cit.just.edu.jo
 ## LICENSE
 This is free and unencumbered software released into the public domain.
-
-Anyone is free to copy, modify, publish, use, compile, sell, or distribute this software, for any purpose, commercial or non-commercial, and by any means.
+Anyone is free to copy, modify, use, or compile this software, for any purpose, commercial or non-commercial, and by any means.
